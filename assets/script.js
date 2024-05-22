@@ -5,9 +5,17 @@ document.addEventListener('DOMContentLoaded', function() {
       box3: 'assets/files/Plan1.pdf',
       box4: 'assets/files/Risk1.pdf',
       box5: 'assets/files/Impl1.pdf',
-      box6: 'https://github.com/BenSlater28/ENG1-part-2',
+      box6: 'https://github.com/ENGTeam11/11Game',
       box7: 'assets/files/desktop-1.0.jar',
       box8: 'assets/files/Add1.pdf',
+      box9: 'assets/files/Req2.pdf',
+      box10: 'assets/files/Arch2.pdf',
+      box11: 'assets/files/Plan2.pdf',
+      box12: 'assets/files/Risk2.pdf',
+      box13: 'assets/files/Impl2.pdf',
+      box14: 'https://github.com/BenSlater28/ENG1-part-2',
+      box15: 'assets/files/desktop-2.0.jar',
+      box16: 'assets/files/Add2.pdf',
     };
   
     const boxes = document.querySelectorAll('.box');

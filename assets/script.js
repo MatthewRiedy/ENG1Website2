@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
       box17: 'assets/files/User_Evaluation.pdf',
       box18: 'assets/files/Change2.pdf',
       box19: 'assets/files/Testing.pdf',
+      box20: 'assets/files/CI.pdf',
     };
   
     const boxes = document.querySelectorAll('.box');

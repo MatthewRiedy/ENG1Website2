@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
       box14: 'https://github.com/BenSlater28/ENG1-part-2',
       box15: 'assets/files/desktop-2.0.jar',
       box16: 'assets/files/Add2.pdf',
+      box17: 'assets/files/User_Evaluation.pdf',
+      box18: 'assets/files/Test.pdf',
     };
   
     const boxes = document.querySelectorAll('.box');

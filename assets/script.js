@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
       box16: 'assets/files/Add2.pdf',
       box17: 'assets/files/User_Evaluation.pdf',
       box18: 'assets/files/Change2.pdf',
+      box19: 'assets/files/Testing.pdf',
     };
   
     const boxes = document.querySelectorAll('.box');

@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
       box3: 'assets/files/Plan1.pdf',
       box4: 'assets/files/Risk1.pdf',
       box5: 'assets/files/Impl1.pdf',
-      box6: 'https://github.com/ENGTeam11/11Game',
+      box6: 'https://github.com/BenSlater28/ENG1-part-2',
       box7: 'assets/files/desktop-1.0.jar',
       box8: 'assets/files/Add1.pdf',
     };

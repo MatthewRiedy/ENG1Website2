@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
       box15: 'assets/files/desktop-2.0.jar',
       box16: 'assets/files/Add2.pdf',
       box17: 'assets/files/User_Evaluation.pdf',
-      box18: 'assets/files/Test.pdf',
+      box18: 'assets/files/Change2.pdf',
     };
   
     const boxes = document.querySelectorAll('.box');

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>game.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tests</a> &gt; <a href="index.source.html" class="el_package">com.mygdx</a> &gt; <span class="el_source">game.java</span></div><h1>game.java</h1><pre class="source lang-java linenums">package com.mygdx;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+
+
+<span class="fc" id="L11">public class game extends Game {</span>
+	public Music backgroundMusic; // Background music
+	public Skin skin; // UI Skin
+
+	@Override
+	public void create() {
+
+		// Background Music
+<span class="nc" id="L19">		backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal(&quot;music/background_music.mp3&quot;));</span>
+<span class="nc" id="L20">		backgroundMusic.setLooping(true);</span>
+<span class="nc" id="L21">		backgroundMusic.setVolume(0.4f);</span>
+<span class="nc" id="L22">		backgroundMusic.play();</span>
+
+		//skins
+<span class="nc" id="L25">		skin = new Skin();</span>
+<span class="nc" id="L26">		skin.addRegions(new TextureAtlas(Gdx.files.internal(&quot;metal/skin/metal-ui.atlas&quot;)));</span>
+<span class="nc" id="L27">		skin.add(&quot;font&quot;, new BitmapFont(Gdx.files.internal(&quot;metal/raw/font-export.fnt&quot;)));</span>
+<span class="nc" id="L28">		skin.load(Gdx.files.internal(&quot;metal/skin/metal-ui.json&quot;));</span>
+		//setting screen to menu initially
+<span class="nc" id="L30">		setScreen(new MenuScreen(this, skin));</span>
+
+
+<span class="nc" id="L33">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

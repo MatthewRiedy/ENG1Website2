@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LeaderboardTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tests</a> &gt; <a href="index.source.html" class="el_package">io.dimitris.gemo.tests</a> &gt; <span class="el_source">LeaderboardTest.java</span></div><h1>LeaderboardTest.java</h1><pre class="source lang-java linenums">package io.dimitris.gemo.tests;
+
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
+import org.junit.Before;
+import org.junit.Test;
+import com.mygdx.Leaderboard;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import java.util.Arrays;
+import java.util.List;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+<span class="fc" id="L18">public class LeaderboardTest {</span>
+
+    @Mock
+    private Application mockApplication;
+
+    @Mock
+    private Preferences mockPreferences;
+
+    @Before
+    public void setUp() {
+<span class="fc" id="L28">        MockitoAnnotations.initMocks(this);</span>
+<span class="fc" id="L29">        Gdx.app = mockApplication;</span>
+<span class="fc" id="L30">        when(Gdx.app.getPreferences(&quot;Leaderboard&quot;)).thenReturn(mockPreferences);</span>
+<span class="fc" id="L31">    }</span>
+
+
+
+    @Test
+    public void testLoadLeaderboard() {
+        // Setup
+<span class="fc" id="L38">        String testData = &quot;John,150|Doe,120|&quot;;</span>
+<span class="fc" id="L39">        when(mockPreferences.getString(&quot;leaderboard&quot;, &quot;&quot;)).thenReturn(testData);</span>
+
+        // Action
+<span class="fc" id="L42">        List&lt;Leaderboard.LeaderboardEntry&gt; loadedLeaderboard = Leaderboard.loadLeaderboard();</span>
+
+        // Assert
+<span class="fc" id="L45">        assertEquals(2, loadedLeaderboard.size());</span>
+<span class="fc" id="L46">        assertEquals(&quot;John&quot;, loadedLeaderboard.get(0).getName());</span>
+<span class="fc" id="L47">        assertEquals(150, loadedLeaderboard.get(0).getScore());</span>
+<span class="fc" id="L48">    }</span>
+
+    @Test
+    public void testSaveLeaderboard() {
+<span class="fc" id="L52">        List&lt;Leaderboard.LeaderboardEntry&gt; leaderboard = Arrays.asList(</span>
+                new Leaderboard.LeaderboardEntry(&quot;John&quot;, 150),
+                new Leaderboard.LeaderboardEntry(&quot;Doe&quot;, 120)
+        );
+
+<span class="fc" id="L57">        Leaderboard.saveLeaderBoard(leaderboard);</span>
+
+<span class="fc" id="L59">        ArgumentCaptor&lt;String&gt; keyCaptor = ArgumentCaptor.forClass(String.class);</span>
+<span class="fc" id="L60">        ArgumentCaptor&lt;String&gt; valueCaptor = ArgumentCaptor.forClass(String.class);</span>
+<span class="fc" id="L61">        verify(mockPreferences).putString(keyCaptor.capture(), valueCaptor.capture());</span>
+<span class="fc" id="L62">        assertEquals(&quot;leaderboard&quot;, keyCaptor.getValue());</span>
+<span class="fc" id="L63">        assertEquals(&quot;John,150|Doe,120|&quot;, valueCaptor.getValue());</span>
+<span class="fc" id="L64">        verify(mockPreferences).flush();</span>
+<span class="fc" id="L65">    }</span>
+    @Test
+    public void testAddToLeaderboard() {
+<span class="fc" id="L68">        String initialData = &quot;Alice,100|&quot;;</span>
+<span class="fc" id="L69">        when(mockPreferences.getString(&quot;leaderboard&quot;, &quot;&quot;)).thenReturn(initialData);</span>
+
+<span class="fc" id="L71">        Leaderboard.addToLeaderboard(&quot;Bob&quot;, 110);</span>
+
+<span class="fc" id="L73">        ArgumentCaptor&lt;String&gt; keyCaptor = ArgumentCaptor.forClass(String.class);</span>
+<span class="fc" id="L74">        ArgumentCaptor&lt;String&gt; valueCaptor = ArgumentCaptor.forClass(String.class);</span>
+<span class="fc" id="L75">        verify(mockPreferences).putString(keyCaptor.capture(), valueCaptor.capture());</span>
+<span class="fc" id="L76">        assertEquals(&quot;leaderboard&quot;, keyCaptor.getValue());</span>
+<span class="fc" id="L77">        assertEquals(&quot;Bob,110|Alice,100|&quot;, valueCaptor.getValue());</span>
+<span class="fc" id="L78">        verify(mockPreferences).flush();</span>
+<span class="fc" id="L79">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

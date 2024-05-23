@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>inGameMenu.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tests</a> &gt; <a href="index.source.html" class="el_package">com.mygdx</a> &gt; <span class="el_source">inGameMenu.java</span></div><h1>inGameMenu.java</h1><pre class="source lang-java linenums">package com.mygdx;
+
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Array;
+
+/**
+ * Represents the in-game menu (pause menu) screen, providing options like resume, change resolutions,
+ * toggle fullscreen, and quit game
+ */
+public class inGameMenu extends ScreenAdapter {
+    private Stage stage; // The stage for managing actors, handling UI components.
+    private Game game; // Reference to the main game objects to switch screen.
+    private Skin skin; // The skip for styling UI components
+    private GameScreen prevScreen; // Reference to the previour screen to return after resume
+    private SelectBox&lt;String&gt; resolutionSelectBox; // Dropdown for selecting screen resolutions
+
+    /**
+     * Constrcuts the in-game menu
+     * @param game Reference to the main game object for screen management
+     * @param skin UI for styling
+     * @param prevScreen Reference to the previously active screen for returning on resume
+     */
+<span class="nc" id="L34">    public inGameMenu(Game game, Skin skin, GameScreen prevScreen){</span>
+<span class="nc" id="L35">        this.game = game;</span>
+<span class="nc" id="L36">        this.skin = skin;</span>
+<span class="nc" id="L37">        this.prevScreen = prevScreen;</span>
+<span class="nc" id="L38">    }</span>
+
+    @Override
+    public void show(){
+<span class="nc" id="L42">        stage = new Stage();</span>
+<span class="nc" id="L43">        Gdx.input.setInputProcessor(stage); // Set the stage to process UI input</span>
+
+<span class="nc" id="L45">        Table table = new Table();</span>
+<span class="nc" id="L46">        table.setFillParent(true); // Make the table fill the screen</span>
+<span class="nc" id="L47">        stage.addActor(table); // Add the table to the stage</span>
+
+        // Create UI components adn add them to the table
+<span class="nc" id="L50">        TextButton resumeButton =  new TextButton(&quot;Resume&quot;, skin);</span>
+<span class="nc" id="L51">        table.add(resumeButton).padBottom(50).row();</span>
+
+        // Populate resolution choices
+<span class="nc" id="L54">        Array&lt;String&gt; resolutions = new Array&lt;&gt;();</span>
+<span class="nc" id="L55">        resolutions.add(&quot;800x600&quot;);</span>
+<span class="nc" id="L56">        resolutions.add(&quot;1024x768&quot;);</span>
+<span class="nc" id="L57">        resolutions.add(&quot;1280x720&quot;);</span>
+<span class="nc" id="L58">        resolutions.add(&quot;1920x1080&quot;);</span>
+<span class="nc" id="L59">        resolutions.add(&quot;2560x1440&quot;);</span>
+<span class="nc" id="L60">        resolutions.add(&quot;3840x2160&quot;);</span>
+
+<span class="nc" id="L62">        resolutionSelectBox = new SelectBox&lt;&gt;(skin);</span>
+<span class="nc" id="L63">        resolutionSelectBox.setItems(resolutions);</span>
+<span class="nc" id="L64">        table.add(resolutionSelectBox).padBottom(20).row();</span>
+
+
+
+<span class="nc" id="L68">        TextButton applyButton = new TextButton(&quot;Apply&quot;, skin);</span>
+<span class="nc" id="L69">        table.add(applyButton).padBottom(20).row();</span>
+
+<span class="nc" id="L71">        TextButton fullscreen = new TextButton(&quot;Fullscreen&quot;, skin);</span>
+<span class="nc" id="L72">        table.add(fullscreen).padBottom(20).row();</span>
+
+<span class="nc" id="L74">        TextButton quitButton = new TextButton(&quot;Quit Game&quot;, skin);</span>
+<span class="nc" id="L75">        table.add(quitButton).padBottom(20).row();</span>
+
+        // Add listeners to buttons for functionality
+<span class="nc" id="L78">        resumeButton.addListener(new ClickListener(){</span>
+           @Override
+           public void clicked(InputEvent event, float x, float y){
+<span class="nc" id="L81">               game.setScreen(prevScreen); //Return to the previous screen</span>
+<span class="nc" id="L82">               dispose(); // Dispose of this screen's resources</span>
+<span class="nc" id="L83">           }</span>
+        });
+
+<span class="nc" id="L86">        applyButton.addListener(new ClickListener() {</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+<span class="nc" id="L89">                applyResolution(); // Apply the selected resolution</span>
+<span class="nc" id="L90">            }</span>
+        });
+
+<span class="nc" id="L93">        fullscreen.addListener(new ClickListener(){</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y){
+<span class="nc" id="L96">                toggleFullscreen(); // Toggle fullscreen mode</span>
+<span class="nc" id="L97">            }</span>
+        });
+
+<span class="nc" id="L100">        quitButton.addListener(new ClickListener(){</span>
+           @Override
+           public void clicked(InputEvent event, float x, float y){
+<span class="nc" id="L103">               Gdx.app.exit(); // Exit the application</span>
+<span class="nc" id="L104">           }</span>
+        });
+<span class="nc" id="L106">    }</span>
+
+    /**
+     * Applies the selected resolution from the resolutionSelectBox
+     */
+    private void applyResolution() {
+<span class="nc" id="L112">        String selectedResolution = resolutionSelectBox.getSelected();</span>
+
+<span class="nc" id="L114">        String[] resolutionParts = selectedResolution.split(&quot;x&quot;);</span>
+<span class="nc" id="L115">        int width = Integer.parseInt(resolutionParts[0]);</span>
+<span class="nc" id="L116">        int height = Integer.parseInt(resolutionParts[1]);</span>
+<span class="nc" id="L117">        Gdx.graphics.setWindowedMode(width, height);</span>
+
+<span class="nc" id="L119">        System.out.println(&quot;resolution is now: &quot; + selectedResolution);</span>
+
+
+<span class="nc" id="L122">        game.setScreen(new inGameMenu(game, skin, prevScreen)); // Refresh the screen to apply resolution.</span>
+<span class="nc" id="L123">    }</span>
+
+    /**
+     * Toggles between fullscreen and windowed mode
+     */
+    private void toggleFullscreen(){
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        if(Gdx.graphics.isFullscreen()){</span>
+<span class="nc" id="L130">            Gdx.graphics.setWindowedMode(800,600); // Return to default windows resolution</span>
+        }
+        else{
+<span class="nc" id="L133">            Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode()); // Set to fullscreen</span>
+        }
+<span class="nc" id="L135">        game.setScreen(new inGameMenu(game, skin, prevScreen)); // Refresh the screen to apply mode change</span>
+<span class="nc" id="L136">    }</span>
+
+
+    @Override
+    public void render(float delta){
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){</span>
+<span class="nc" id="L142">            game.setScreen(prevScreen); // Return to the previous screen on ESC press</span>
+        }
+<span class="nc" id="L144">        Gdx.gl.glClearColor(0.5f, 0.5f, 0.5f, 1); // Set background color</span>
+<span class="nc" id="L145">        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); // Clear the screen</span>
+
+<span class="nc" id="L147">        stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));</span>
+<span class="nc" id="L148">        stage.draw(); // Draw the stage</span>
+<span class="nc" id="L149">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

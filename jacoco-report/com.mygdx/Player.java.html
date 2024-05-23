@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Player.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tests</a> &gt; <a href="index.source.html" class="el_package">com.mygdx</a> &gt; <span class="el_source">Player.java</span></div><h1>Player.java</h1><pre class="source lang-java linenums">package com.mygdx;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
+
+/**
+ * Represents the player character in the game, managing its rendering, animations,
+ * and movement.
+ */
+public class Player {
+    // Animations frame rate
+    private static final float FRAME_TIME = 1 / 5f; //5 fps
+
+    // Players texture image
+    private final Texture texture;
+
+    // Time elapsed since the animation started playing
+    private float elapsed_time;
+
+    // Animations
+    private Animation&lt;TextureRegion&gt; idle;
+    private Animation&lt;TextureRegion&gt; runRight;
+    private Animation&lt;TextureRegion&gt; runLeft;
+    private Animation&lt;TextureRegion&gt; runUp;
+    private Animation&lt;TextureRegion&gt; runDown;
+
+    // SpriteBatch for rendering textures
+    private SpriteBatch batch;
+
+    // Current position of the player in the game world
+    public Vector2 position;
+
+    // Speed of players movement
+    private float speed;
+
+    // Reference to the game map to check for collisions etc
+    private GameMap gameMap;
+
+    // Dimensions of the character for collision and rendering etc
+<span class="fc" id="L46">    private float character_width = 13;</span>
+<span class="fc" id="L47">    private float character_height = 19;</span>
+
+
+
+    // Movement booleans to determine the current directions of movement
+    public boolean isMovingLeft;
+    public boolean isMovingRight;
+    public boolean isMovingUp;
+    public boolean isMovingDown;
+
+    /**
+     * Initializes a new instance of the Player class with its starting position, speed, and game map context.
+     *
+     * @param texture The texture for the player's character.
+     * @param x The initial X coordinate of the player.
+     * @param y The initial Y coordinate of the player.
+     * @param speed The movement speed of the player.
+     * @param gameMap The game map the player interacts with.
+     */
+<span class="fc" id="L66">    public Player(Texture texture, float x, float y, float speed, GameMap gameMap){</span>
+<span class="fc" id="L67">        this.texture = texture;</span>
+<span class="fc" id="L68">        this.position = new Vector2(x, y);</span>
+<span class="fc" id="L69">        this.speed = speed;</span>
+<span class="fc" id="L70">        this.gameMap = gameMap;</span>
+<span class="fc" id="L71">    }</span>
+
+    /**
+     * Loads the animations for the player from a TextureAtlas.
+     */
+    public void create(){
+<span class="nc" id="L77">        TextureAtlas allAnimations = new TextureAtlas(Gdx.files.internal(&quot;character/allAnimationsAtlas.atlas&quot;));</span>
+
+        //idle TextureAtlas
+<span class="nc" id="L80">        idle = new Animation&lt;&gt;(FRAME_TIME, allAnimations.findRegions(&quot;down_idle&quot;));</span>
+<span class="nc" id="L81">        idle.setPlayMode(Animation.PlayMode.LOOP);</span>
+
+        //run right TextureAtlas
+<span class="nc" id="L84">        runRight = new Animation&lt;&gt;(FRAME_TIME, allAnimations.findRegions(&quot;right_walk&quot;));</span>
+<span class="nc" id="L85">        runRight.setPlayMode(Animation.PlayMode.LOOP);</span>
+
+        //run left animation
+<span class="nc" id="L88">        runLeft = new Animation&lt;&gt;(FRAME_TIME, allAnimations.findRegions(&quot;left_walk&quot;));</span>
+<span class="nc" id="L89">        runLeft.setPlayMode(Animation.PlayMode.LOOP);</span>
+
+        //run up animation
+<span class="nc" id="L92">        runUp = new Animation&lt;&gt;(FRAME_TIME, allAnimations.findRegions(&quot;up_walk&quot;));</span>
+<span class="nc" id="L93">        runUp.setPlayMode(Animation.PlayMode.LOOP);</span>
+
+        //run down animation
+<span class="nc" id="L96">        runDown = new Animation&lt;&gt;(FRAME_TIME, allAnimations.findRegions(&quot;down_walk&quot;));</span>
+<span class="nc" id="L97">        runDown.setPlayMode(Animation.PlayMode.LOOP);</span>
+
+
+<span class="nc" id="L100">        batch = new SpriteBatch();</span>
+
+<span class="nc" id="L102">    }</span>
+
+    /**
+     * Renders the player at its current position, with the appropriate animation based on movement.
+     *
+     * @param delta Time elapsed since the last render call.
+     * @param cam The game's camera for correct rendering based on the camera's projection matrix.
+     */
+    public void render(float delta, OrthographicCamera cam){
+<span class="nc" id="L111">        elapsed_time += delta;</span>
+<span class="nc" id="L112">        float scale = 3f;</span>
+        
+<span class="nc" id="L114">        Animation&lt;TextureRegion&gt; animation = idle;</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        if (isMovingRight){</span>
+<span class="nc" id="L116">            animation = runRight;</span>
+        }
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (isMovingLeft){</span>
+<span class="nc" id="L119">            animation = runLeft;</span>
+        }
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        if (isMovingDown){</span>
+<span class="nc" id="L122">            animation = runDown;</span>
+        }
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (isMovingUp){</span>
+<span class="nc" id="L125">            animation = runUp;</span>
+        }
+        // looping animation
+<span class="nc" id="L128">        TextureRegion currentFrame = animation.getKeyFrame(elapsed_time, true);</span>
+
+<span class="nc" id="L130">        batch.setProjectionMatrix(cam.combined);</span>
+<span class="nc" id="L131">        batch.begin();</span>
+<span class="nc" id="L132">        batch.draw(currentFrame, position.x,position.y, currentFrame.getRegionWidth() * scale, currentFrame.getRegionHeight() * scale);</span>
+<span class="nc" id="L133">        batch.end();</span>
+<span class="nc" id="L134">    }</span>
+
+
+    /**
+     * Disposes of the resources used by the player to free up memory.
+     */
+    public void dispose(){
+<span class="nc" id="L141">        batch.dispose();</span>
+<span class="nc" id="L142">        texture.dispose();</span>
+<span class="nc" id="L143">    }</span>
+
+    /**
+     * Returns the width of the player character.
+     *
+     * @return The character width.
+     */
+    public float getWidth() {
+<span class="fc" id="L151">        return this.character_width;</span>
+    }
+
+    /**
+     * Returns the height of the player character.
+     *
+     * @return The character height.
+     */
+    public float getHeight() {
+<span class="fc" id="L160">        return this.character_height;</span>
+    }
+
+    /**
+     * Moves the player upwards if no obstruction is detected.
+     */
+    public void moveUp(){
+<span class="fc" id="L167">        Vector2 newPosition = new Vector2(position.x, position.y + speed);</span>
+<span class="fc bfc" id="L168" title="All 2 branches covered.">        if (! gameMap.isInArea(newPosition, getWidth(), getHeight(), &quot;collision_layer&quot;)) {</span>
+<span class="fc" id="L169">            position = newPosition;</span>
+<span class="fc" id="L170">            isMovingUp = true;</span>
+        }
+<span class="fc" id="L172">    }</span>
+
+    /**
+     * Moves the player downwards if no obstruction is detected.
+     */
+    public void moveDown() {
+<span class="fc" id="L178">        Vector2 newPosition = new Vector2(position.x, position.y - speed);</span>
+<span class="fc bfc" id="L179" title="All 2 branches covered.">        if (! gameMap.isInArea(newPosition, getWidth(), getHeight(), &quot;collision_layer&quot;)) {</span>
+<span class="fc" id="L180">            position = newPosition;</span>
+<span class="fc" id="L181">            isMovingDown = true;</span>
+        }
+<span class="fc" id="L183">    }</span>
+
+    /**
+     * Moves the player to the left if no obstruction is detected.
+     */
+    public void moveLeft() {
+<span class="fc" id="L189">        Vector2 newPosition = new Vector2(position.x - speed, position.y);</span>
+<span class="fc bfc" id="L190" title="All 2 branches covered.">        if (! gameMap.isInArea(newPosition, getWidth(), getHeight(), &quot;collision_layer&quot;)) {</span>
+<span class="fc" id="L191">            position = newPosition;</span>
+<span class="fc" id="L192">            isMovingLeft = true;</span>
+        }
+<span class="fc" id="L194">    }</span>
+
+    /**
+     * Moves the player to the right if no obstruction is detected.
+     */
+    public void moveRight() {
+<span class="fc" id="L200">        Vector2 newPosition = new Vector2(position.x + speed, position.y);</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">        if (! gameMap.isInArea(newPosition, getWidth(), getHeight(), &quot;collision_layer&quot;)) {</span>
+<span class="fc" id="L202">            position = newPosition;</span>
+<span class="fc" id="L203">            isMovingRight = true;</span>
+        }
+<span class="fc" id="L205">    }</span>
+
+
+    /**
+     * Stops the upward movement of the player.
+     */
+    public void stopMovingUp(){
+<span class="fc" id="L212">        isMovingUp = false;</span>
+<span class="fc" id="L213">    }</span>
+    /**
+     * Stops the downward movement of the player.
+     */
+    public void stopMovingDown (){
+<span class="fc" id="L218">        isMovingDown = false;</span>
+<span class="fc" id="L219">    }</span>
+    /**
+     * Stops the rightward movement of the player.
+     */
+    public void stopMovingRight(){
+<span class="fc" id="L224">        isMovingRight = false;</span>
+<span class="fc" id="L225">    }</span>
+    /**
+     * Stops the leftward movement of the player.
+     */
+    public void stopMovingLeft(){
+<span class="fc" id="L230">        isMovingLeft = false;</span>
+<span class="fc" id="L231">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

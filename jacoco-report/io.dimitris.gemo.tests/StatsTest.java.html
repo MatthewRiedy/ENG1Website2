@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StatsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tests</a> &gt; <a href="index.source.html" class="el_package">io.dimitris.gemo.tests</a> &gt; <span class="el_source">StatsTest.java</span></div><h1>StatsTest.java</h1><pre class="source lang-java linenums">
+package io.dimitris.gemo.tests;
+
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.mygdx.*;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+<span class="fc" id="L13">public class StatsTest {</span>
+    @Test
+    public void SleepTest() {
+<span class="fc" id="L16">        StatsTracker stats = new StatsTracker();</span>
+<span class="fc" id="L17">        int SleepHoursBefore =  stats.getSleepHours();</span>
+<span class="fc" id="L18">        int SleepMinutesBefore = stats.getSleepMinutes();</span>
+<span class="fc" id="L19">        stats.addSleep(1, 1);</span>
+<span class="fc" id="L20">        assertEquals(SleepHoursBefore + 1, stats.getSleepHours());</span>
+<span class="fc" id="L21">        assertEquals(SleepMinutesBefore + 1, stats.getSleepMinutes());</span>
+<span class="fc" id="L22">    }</span>
+
+    @Test
+    public void StudyTest() {
+<span class="fc" id="L26">        StatsTracker stats = new StatsTracker();</span>
+<span class="fc" id="L27">        game game = new game();</span>
+<span class="fc" id="L28">        Skin skin = new Skin();</span>
+<span class="fc" id="L29">        Leaderboard leaderboard = new Leaderboard();</span>
+<span class="fc" id="L30">        DayCycleManager dayCycleManager = new DayCycleManager(game, skin, leaderboard, stats);</span>
+<span class="fc" id="L31">        int StudyHoursBefore =  stats.getStudy();</span>
+<span class="fc" id="L32">        stats.addStudy(1, dayCycleManager.day);</span>
+<span class="fc" id="L33">        assertEquals(StudyHoursBefore + 1, stats.getStudy());</span>
+<span class="fc" id="L34">    }</span>
+
+    @Test
+    public void RelaxTest() {
+<span class="fc" id="L38">        StatsTracker stats = new StatsTracker();</span>
+<span class="fc" id="L39">        game game = new game();</span>
+<span class="fc" id="L40">        Skin skin = new Skin();</span>
+<span class="fc" id="L41">        Leaderboard leaderboard = new Leaderboard();</span>
+<span class="fc" id="L42">        DayCycleManager dayCycleManager = new DayCycleManager(game, skin, leaderboard, stats);</span>
+<span class="fc" id="L43">        int RelaxHoursBefore =  stats.getRelax();</span>
+<span class="fc" id="L44">        stats.addRelax(1, dayCycleManager.day);</span>
+<span class="fc" id="L45">        assertEquals(RelaxHoursBefore + 1, stats.getRelax());</span>
+<span class="fc" id="L46">    }</span>
+
+    @Test
+    public void EatTest() {
+<span class="fc" id="L50">        StatsTracker stats = new StatsTracker();</span>
+<span class="fc" id="L51">        game game = new game();</span>
+<span class="fc" id="L52">        Skin skin = new Skin();</span>
+<span class="fc" id="L53">        Leaderboard leaderboard = new Leaderboard();</span>
+<span class="fc" id="L54">        DayCycleManager dayCycleManager = new DayCycleManager(game, skin, leaderboard, stats);</span>
+<span class="fc" id="L55">        int MealsBefore =  stats.getMeals();</span>
+<span class="fc" id="L56">        stats.mealAte(dayCycleManager.day);</span>
+<span class="fc" id="L57">        assertEquals(MealsBefore + 1, stats.getMeals());</span>
+<span class="fc" id="L58">    }</span>
+
+    @Test
+    public void TimeTest() {
+<span class="fc" id="L62">        StatsTracker stats = new StatsTracker();</span>
+<span class="fc" id="L63">        game game = new game();</span>
+<span class="fc" id="L64">        Skin skin = new Skin();</span>
+<span class="fc" id="L65">        Leaderboard leaderboard = new Leaderboard();</span>
+<span class="fc" id="L66">        DayCycleManager dayCycleManager = new DayCycleManager(game, skin, leaderboard, stats);</span>
+<span class="fc" id="L67">        int TimeHoursBefore = dayCycleManager.getHour();</span>
+<span class="fc" id="L68">        int TimeMinutesBefore = dayCycleManager.getMinute();</span>
+<span class="fc" id="L69">        dayCycleManager.addTime(1, 1);</span>
+<span class="fc" id="L70">        assertEquals(TimeHoursBefore + 1, dayCycleManager.getHour());</span>
+<span class="fc" id="L71">        assertEquals(TimeMinutesBefore + 1, dayCycleManager.getMinute());</span>
+<span class="fc" id="L72">    }</span>
+
+    @Test
+    public void EatStreakTest(){
+<span class="fc" id="L76">        StatsTracker stats = new StatsTracker();</span>
+<span class="fc" id="L77">        stats.setEatStreak(1);</span>
+<span class="fc" id="L78">        stats.setEatStreak(2);</span>
+<span class="fc" id="L79">        assertEquals(2,stats.eatStreak);</span>
+<span class="fc" id="L80">        assertEquals(2,stats.highestEatStreak);</span>
+
+<span class="fc" id="L82">        stats.setEatStreak(4);</span>
+<span class="fc" id="L83">        assertEquals(0, stats.eatStreak);</span>
+<span class="fc" id="L84">        assertEquals(2,stats.highestEatStreak);</span>
+
+<span class="fc" id="L86">    }</span>
+
+    @Test
+    public void StudyStreakTest(){
+<span class="fc" id="L90">        StatsTracker stats = new StatsTracker();</span>
+
+<span class="fc" id="L92">        stats.setStudyStreak(1);</span>
+<span class="fc" id="L93">        assertEquals(1, stats.studyStreak);</span>
+
+<span class="fc" id="L95">        stats.setStudyStreak(2);</span>
+<span class="fc" id="L96">        assertEquals(2, stats.studyStreak);</span>
+
+<span class="fc" id="L98">        stats.setStudyStreak(4);</span>
+<span class="fc" id="L99">        assertEquals(1, stats.studyStreak);</span>
+<span class="fc" id="L100">        assertEquals(2, stats.highestStudyStreak);</span>
+
+<span class="fc" id="L102">        stats.setStudyStreak(5);</span>
+<span class="fc" id="L103">        assertEquals(2, stats.studyStreak);</span>
+<span class="fc" id="L104">    }</span>
+
+    @Test
+    public void RelaxStreakTest(){
+<span class="fc" id="L108">        StatsTracker stats = new StatsTracker();</span>
+
+<span class="fc" id="L110">        stats.setRelaxStreak(1);</span>
+<span class="fc" id="L111">        assertEquals(1,stats.relaxStreak);</span>
+
+<span class="fc" id="L113">        stats.setRelaxStreak(2);</span>
+<span class="fc" id="L114">        assertEquals(2,stats.relaxStreak);</span>
+
+
+<span class="fc" id="L117">        stats.setRelaxStreak(4);</span>
+<span class="fc" id="L118">        assertEquals(1, stats.relaxStreak);</span>
+<span class="fc" id="L119">        assertEquals(2, stats.highestRelaxStreak);</span>
+
+<span class="fc" id="L121">        stats.setRelaxStreak(5);</span>
+<span class="fc" id="L122">        assertEquals(2,stats.relaxStreak);</span>
+<span class="fc" id="L123">    }</span>
+
+    @Test
+    public void GradeTest(){
+<span class="fc" id="L127">        StatsTracker stats = new StatsTracker();</span>
+
+<span class="fc" id="L129">        stats.hoursStudied = 10;</span>
+<span class="fc" id="L130">        stats.hoursRelaxed = 10;</span>
+<span class="fc" id="L131">        stats.mealsEaten = 7;</span>
+<span class="fc" id="L132">        assertEquals(&quot;GRADE: A+, Well Done; You Got The Top Score!!&quot;, stats.getGrade());</span>
+
+<span class="fc" id="L134">        stats.hoursStudied = 7;</span>
+<span class="fc" id="L135">        stats.hoursRelaxed = 7;</span>
+<span class="fc" id="L136">        stats.mealsEaten = 7;</span>
+<span class="fc" id="L137">        assertEquals(&quot;GRADE: A+, Well Done; You Got The Top Score!!&quot;, stats.getGrade());</span>
+
+<span class="fc" id="L139">        stats.hoursStudied = 4;</span>
+<span class="fc" id="L140">        stats.hoursRelaxed = 4;</span>
+<span class="fc" id="L141">        stats.mealsEaten = 5;</span>
+<span class="fc" id="L142">        assertEquals(&quot;GRADE: FAIL, Did You Even Try?&quot;, stats.getGrade());</span>
+
+<span class="fc" id="L144">        stats.hoursStudied = 3;</span>
+<span class="fc" id="L145">        stats.hoursRelaxed = 3;</span>
+<span class="fc" id="L146">        stats.mealsEaten = 4;</span>
+<span class="fc" id="L147">        assertEquals(&quot;GRADE: FAIL, Did You Even Try?&quot;, stats.getGrade());</span>
+<span class="fc" id="L148">    }</span>
+
+    @Test
+    public void ScoreTotalTest(){
+<span class="fc" id="L152">        StatsTracker stats = new StatsTracker();</span>
+
+<span class="fc" id="L154">        stats.hoursStudied = 5;</span>
+<span class="fc" id="L155">        stats.hoursRelaxed = 3;</span>
+<span class="fc" id="L156">        stats.mealsEaten = 4;</span>
+
+<span class="fc" id="L158">        assertEquals(12, stats.getScoreTotal());</span>
+<span class="fc" id="L159">    }</span>
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

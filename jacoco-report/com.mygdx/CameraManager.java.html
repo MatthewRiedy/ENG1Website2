@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CameraManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tests</a> &gt; <a href="index.source.html" class="el_package">com.mygdx</a> &gt; <span class="el_source">CameraManager.java</span></div><h1>CameraManager.java</h1><pre class="source lang-java linenums">package com.mygdx;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Vector2;
+
+/**
+ * Manages the camera that the Gamescreen uses, facilitates the camera used, its following mechanics, the zooming mechanics and the boundary of the camera
+ */
+public class CameraManager {
+    public int player_bound;
+    public float zoom_mult;
+    public Vector2 position;
+    public OrthographicCamera camera;
+    
+    /**
+     * Used to instantiate the camera object and give some initial values
+     * @param player_pos the players initial position to focus on
+     */ 
+<span class="nc" id="L21">    public CameraManager(Vector2 player_pos){</span>
+<span class="nc" id="L22">        position = new Vector2(player_pos.x, player_pos.y);</span>
+<span class="nc" id="L23">        zoom_mult = 0.2f;</span>
+<span class="nc" id="L24">        player_bound = 400;</span>
+<span class="nc" id="L25">        camera = new OrthographicCamera(position.x, position.y); </span>
+<span class="nc" id="L26">        camera.zoom = 0.65f;</span>
+<span class="nc" id="L27">    }</span>
+
+    /**
+     * Calls the camera catchup and zoom functions to update the cameras positioning
+     * @param delta the time since last render
+     * @param player_pos the position of the player at the time
+     */
+    public void update(float delta, Vector2 player_pos){
+<span class="nc bnc" id="L35" title="All 4 branches missed.">        if (position.x != player_pos.x || position.y != player_pos.y){</span>
+<span class="nc" id="L36">            catchup(delta, player_pos);</span>
+<span class="nc" id="L37">            boundary_check(player_pos);</span>
+        }
+<span class="nc" id="L39">        zoom(delta);</span>
+<span class="nc" id="L40">        camera.position.set(position.x, position.y, 0);</span>
+        
+<span class="nc" id="L42">        camera.update();</span>
+<span class="nc" id="L43">    }</span>
+
+    /**
+     * Makes sure that the camera stays within a set distance of the player to prevent them going off screen
+     * @param player_pos position of the player
+     */
+    private void boundary_check(Vector2 player_pos){
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        if (position.x &gt; player_pos.x + player_bound){</span>
+<span class="nc" id="L51">            position.x = player_pos.x + player_bound;</span>
+        }
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        else if (position.x &lt; player_pos.x - player_bound){</span>
+<span class="nc" id="L54">            position.x = player_pos.x - player_bound;</span>
+        }
+
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        if (position.y &gt; player_pos.y + player_bound){</span>
+<span class="nc" id="L58">            position.y = player_pos.y + player_bound;</span>
+        }
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        else if (position.y &lt; player_pos.y - player_bound){</span>
+<span class="nc" id="L61">            position.y = player_pos.y - player_bound;</span>
+        }
+<span class="nc" id="L63">    }</span>
+
+    
+    /**
+     * slowly moves the camera to be centered on the player
+     * @param delta time passed since the last refresh
+     * @param player_pos the player position at the time
+     */
+    private void catchup(float delta, Vector2 player_pos){
+<span class="nc" id="L72">        double X_move = ((player_pos.x - position.x) * 2) * delta;</span>
+<span class="nc" id="L73">        double Y_move = ((player_pos.y - position.y) * 2) * delta;</span>
+        
+<span class="nc bnc" id="L75" title="All 4 branches missed.">        if (X_move &gt; 0 &amp;&amp; X_move &lt; 0.01){</span>
+<span class="nc" id="L76">            X_move = 0.01;</span>
+        }
+<span class="nc bnc" id="L78" title="All 4 branches missed.">        else if (X_move &lt; 0 &amp;&amp; X_move &gt; -0.01){</span>
+<span class="nc" id="L79">            X_move = -0.01;</span>
+        }
+
+<span class="nc bnc" id="L82" title="All 4 branches missed.">        if (Y_move &gt; 0 &amp;&amp; Y_move &lt; 0.01){</span>
+<span class="nc" id="L83">            Y_move = 0.01;</span>
+        }
+<span class="nc bnc" id="L85" title="All 4 branches missed.">        if (Y_move &lt; 0 &amp;&amp; Y_move &gt; -0.01){</span>
+<span class="nc" id="L86">            Y_move = -0.01;</span>
+        }
+        
+        
+<span class="nc" id="L90">        float new_X = (float) (position.x + X_move);</span>
+<span class="nc" id="L91">        float new_Y = (float) (position.y + Y_move);</span>
+
+<span class="nc bnc" id="L93" title="All 8 branches missed.">        if ((position.x &lt; player_pos.x &amp;&amp; new_X &gt; player_pos.x) || (position.x &gt; player_pos.x &amp;&amp; new_X &lt; player_pos.x)){</span>
+<span class="nc" id="L94">            position.x = player_pos.x;</span>
+        }
+        else{
+<span class="nc" id="L97">            position.x = new_X;</span>
+        }
+
+<span class="nc bnc" id="L100" title="All 8 branches missed.">        if ((position.y &lt; player_pos.y &amp;&amp; new_Y &gt; player_pos.y) || (position.y &gt; player_pos.y &amp;&amp; new_Y &lt; player_pos.y)){</span>
+<span class="nc" id="L101">            position.y = player_pos.y;</span>
+        }
+        else{
+<span class="nc" id="L104">            position.y = new_Y;</span>
+        }
+<span class="nc" id="L106">    }</span>
+
+    /**
+     * Allows the camera to be zoomed in or out
+     * @param delta the time since the last refresh
+     */
+    private void zoom(float delta){
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (Gdx.input.isKeyPressed(Keys.EQUALS)){</span>
+<span class="nc" id="L114">            camera.zoom -= camera.zoom*zoom_mult*delta;</span>
+        }
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        else if (Gdx.input.isKeyPressed(Keys.MINUS)){</span>
+<span class="nc" id="L117">            camera.zoom += camera.zoom*zoom_mult*delta;</span>
+        }
+
+<span class="nc" id="L120">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

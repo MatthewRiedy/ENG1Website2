@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SettingScreen.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tests</a> &gt; <a href="index.source.html" class="el_package">com.mygdx</a> &gt; <span class="el_source">SettingScreen.java</span></div><h1>SettingScreen.java</h1><pre class="source lang-java linenums">package com.mygdx;
+
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Array;
+
+/**
+ * Represents the settings screen in the game, allowing the user to change game settings such
+ * as screen resolution and toggle fullscreen mode
+ */
+public class SettingScreen extends ScreenAdapter {
+    private Stage stage; //  The stage for managing and displaying UI components
+    private Game game; // The main game object for changing screen
+    private Skin skin; // The skin for styling
+    private SelectBox&lt;String&gt; resolutionSelectBox; // Dropdown for selecting screen resolutions
+
+    /**
+     * Constructs the settings screen with references to the main game object and skin
+     * @param game The game object to facilitates screen changes
+     * @param skin The skin for styling
+     */
+<span class="nc" id="L31">    public SettingScreen(Game game, Skin skin) {</span>
+<span class="nc" id="L32">        this.game = game;</span>
+<span class="nc" id="L33">        this.skin = skin;</span>
+<span class="nc" id="L34">    }</span>
+    @Override
+    public void show() {
+        // Initialize the stage and set it to process user input
+<span class="nc" id="L38">        stage = new Stage();</span>
+<span class="nc" id="L39">        Gdx.input.setInputProcessor(stage);</span>
+
+        // Create a layout table for organizing UI components
+<span class="nc" id="L42">        Table table = new Table();</span>
+<span class="nc" id="L43">        table.setFillParent(true); // Make the table fill the screen</span>
+<span class="nc" id="L44">        stage.addActor(table); // Add the table to the stage</span>
+
+        // Populate resolution choices for the select box.
+<span class="nc" id="L47">        Array&lt;String&gt; resolutions = new Array&lt;&gt;();</span>
+<span class="nc" id="L48">        resolutions.add(&quot;800x600&quot;);</span>
+<span class="nc" id="L49">        resolutions.add(&quot;1024x768&quot;);</span>
+<span class="nc" id="L50">        resolutions.add(&quot;1280x720&quot;);</span>
+<span class="nc" id="L51">        resolutions.add(&quot;1920x1080&quot;);</span>
+<span class="nc" id="L52">        resolutions.add(&quot;2560x1440&quot;);</span>
+<span class="nc" id="L53">        resolutions.add(&quot;3840x2160&quot;);</span>
+
+        // Initialize the resolution box and set its items
+<span class="nc" id="L56">        resolutionSelectBox = new SelectBox&lt;&gt;(skin);</span>
+<span class="nc" id="L57">        resolutionSelectBox.setItems(resolutions);</span>
+<span class="nc" id="L58">        table.add(resolutionSelectBox).padBottom(20).row();</span>
+
+        // Create buttons for applying settings and toggling fullscreen
+<span class="nc" id="L61">        TextButton applyButton = new TextButton(&quot;Apply&quot;, skin);</span>
+<span class="nc" id="L62">        table.add(applyButton).padBottom(20).row();</span>
+<span class="nc" id="L63">        TextButton fullscreen = new TextButton(&quot;Fullscreen&quot;, skin);</span>
+<span class="nc" id="L64">        table.add(fullscreen).padBottom(20).row();</span>
+
+        // Add listeners to buttons for handling user interactions
+<span class="nc" id="L67">        applyButton.addListener(new ClickListener() {</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+<span class="nc" id="L70">                applyResolution(); // Apply the selected resolution</span>
+<span class="nc" id="L71">            }</span>
+        });
+
+<span class="nc" id="L74">        fullscreen.addListener(new ClickListener(){</span>
+           @Override
+           public void clicked(InputEvent event, float x, float y){
+<span class="nc" id="L77">               toggleFullscreen(); // Toggle fullscreen mode</span>
+<span class="nc" id="L78">           }</span>
+        });
+<span class="nc" id="L80">    }</span>
+
+    /**
+     * Applies the selected screen resolution from the resolutionSelectBox
+     */
+    private void applyResolution() {
+<span class="nc" id="L86">        String selectedResolution = resolutionSelectBox.getSelected();</span>
+
+<span class="nc" id="L88">        String[] resolutionParts = selectedResolution.split(&quot;x&quot;);</span>
+<span class="nc" id="L89">                  int width = Integer.parseInt(resolutionParts[0]);</span>
+<span class="nc" id="L90">                  int height = Integer.parseInt(resolutionParts[1]);</span>
+<span class="nc" id="L91">                  Gdx.graphics.setWindowedMode(width, height); // Set the screen resolution</span>
+
+<span class="nc" id="L93">        System.out.println(&quot;resolution is now: &quot; + selectedResolution);</span>
+
+
+<span class="nc" id="L96">        game.setScreen(new MenuScreen(game, skin)); // Return to the menu screen.</span>
+<span class="nc" id="L97">    }</span>
+
+    /**
+     * Toggles the screen between fullscreen and windowed mode
+     */
+    private void toggleFullscreen(){
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        if(Gdx.graphics.isFullscreen()){</span>
+<span class="nc" id="L104">            Gdx.graphics.setWindowedMode(800,600); // Set to windowed mode with default size</span>
+        }
+        else{
+<span class="nc" id="L107">            Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode()); // Set to fullscreen</span>
+        }
+<span class="nc" id="L109">        game.setScreen(new MenuScreen(game, skin)); // Return to the menu screen</span>
+<span class="nc" id="L110">    }</span>
+
+    @Override
+    public void render(float delta) {
+        // Clear the screen with a solid color
+<span class="nc" id="L115">        Gdx.gl.glClearColor(0.5f, 0.5f, 0.5f, 1);</span>
+<span class="nc" id="L116">        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);</span>
+
+        // Update and draw the stage
+<span class="nc" id="L119">        stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));</span>
+<span class="nc" id="L120">        stage.draw();</span>
+<span class="nc" id="L121">    }</span>
+
+    @Override
+    public void resize(int width, int height) {
+        // Adjust the stage's viewport when the screen size changes
+<span class="nc" id="L126">        stage.getViewport().update(width, height, true);</span>
+<span class="nc" id="L127">    }</span>
+
+    @Override
+<span class="nc" id="L130">    public void pause() {}</span>
+
+    @Override
+<span class="nc" id="L133">    public void resume() {}</span>
+
+    @Override
+<span class="nc" id="L136">    public void hide() {}</span>
+
+    /**
+     * Dispose of the resources used, to prevent memory leaks
+     */
+    @Override
+    public void dispose() {
+<span class="nc" id="L143">        stage.dispose();</span>
+<span class="nc" id="L144">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

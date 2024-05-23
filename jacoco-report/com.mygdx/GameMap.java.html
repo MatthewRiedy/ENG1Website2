@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameMap.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tests</a> &gt; <a href="index.source.html" class="el_package">com.mygdx</a> &gt; <span class="el_source">GameMap.java</span></div><h1>GameMap.java</h1><pre class="source lang-java linenums">package com.mygdx;
+
+import com.badlogic.gdx.maps.*;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+
+/**
+ * GameMap is a class designed to manage the game's map using Tiled maps.
+ * It facilitates rendering the map, handling layer visibility, player movement validations,
+ * and providing spawn points based on the Tiled map properties.
+ */
+public class GameMap {
+    private TiledMap tiledMap; //Holds the tiled map structure
+    private OrthogonalTiledMapRenderer renderer; //Renderer fot the tiled map
+<span class="nc" id="L21">    private float timeSinceLastToggle = 0; //Timer for toggling layer &quot;water2&quot; visibility</span>
+<span class="nc" id="L22">    private float scale = 1 / 0.18f; //Map scale</span>
+    private boolean inHouse, inCS, inRestaurant; // checks for whether the roofs have already been toggled
+
+    /**
+     * Constructor that initializes the GameMap with a specified map path.
+     * @param mapPath The file path to the Tiled map file (.tmx).
+     */
+<span class="nc" id="L29">    public GameMap(String mapPath) {</span>
+<span class="nc" id="L30">        tiledMap = new TmxMapLoader().load(mapPath);</span>
+<span class="nc" id="L31">        renderer = new OrthogonalTiledMapRenderer(tiledMap, scale);</span>
+<span class="nc" id="L32">        inHouse = false;</span>
+<span class="nc" id="L33">        inRestaurant = false;</span>
+<span class="nc" id="L34">        inCS = false;</span>
+<span class="nc" id="L35">    }</span>
+
+    /**
+     * Renders the map onto the provided camera's view.
+     * @param camera The camera through which the map is viewed.
+     */
+    public void render(OrthographicCamera camera) {
+<span class="nc" id="L42">        renderer.setView(camera);</span>
+<span class="nc" id="L43">        renderer.render();</span>
+<span class="nc" id="L44">    }</span>
+
+    /**
+     * Updates the map state
+     * including layer visibility toggling based on a timer for water animation
+     * @param delta The time elapsed since the last frame in seconds.
+     */
+    public void update(float delta) {
+<span class="nc" id="L52">        timeSinceLastToggle += delta;</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        if (timeSinceLastToggle &gt;= .75f) {</span>
+<span class="nc" id="L54">            toggleLayerVisibility(&quot;terrain&quot;, &quot;water2&quot;);</span>
+<span class="nc" id="L55">            timeSinceLastToggle -= 0.75f; // Reset the timer, subtracting instead of setting to 0 to avoid any overflow</span>
+        }
+<span class="nc" id="L57">    }</span>
+
+    /**
+     * Toggles the visibility of a specific layer within a group layer.
+     * @param groupName The name of the group layer containing the target layer.
+     * @param layerName The name of the layer whose visibility is to be toggled.
+     */
+    public void toggleLayerVisibility(String groupName, String layerName) {
+<span class="nc" id="L65">        MapLayer groupLayer = tiledMap.getLayers().get(groupName);</span>
+
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (groupLayer instanceof MapGroupLayer) {</span>
+<span class="nc" id="L68">            MapLayer layer = ((MapGroupLayer) groupLayer).getLayers().get(layerName);</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">            if (layer != null) {</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">                layer.setVisible(!layer.isVisible());</span>
+            }
+        }
+<span class="nc" id="L73">    }</span>
+
+    /**
+     * Determines if a player can move to a specified position based on collision layers.
+     * @param Position The proposed position of the player.
+     * @param width The width of the player's bounds.
+     * @param height The height of the player's bounds.
+     * @param layerName the name of the object layer in the map
+     * @return true if the player is within the boundary of the object layer; false otherwise.
+     */
+    public boolean isInArea(Vector2 Position, float width, float height, String layerName) {
+<span class="nc" id="L84">        Rectangle playerBounds = new Rectangle(Position.x, Position.y, width, height);</span>
+<span class="nc" id="L85">        MapLayer ObjectLayer = tiledMap.getLayers().get(layerName);</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        if (ObjectLayer != null) {</span>
+<span class="nc" id="L87">            MapObjects objects = ObjectLayer.getObjects();</span>
+
+<span class="nc bnc" id="L89" title="All 2 branches missed.">            for (MapObject object : objects) {</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">                if (object instanceof RectangleMapObject) {</span>
+<span class="nc" id="L91">                    Rectangle rectangle = ((RectangleMapObject) object).getRectangle();</span>
+<span class="nc" id="L92">                    Rectangle scaledRectangle = new Rectangle(rectangle.x * scale, rectangle.y * scale, rectangle.width * scale, rectangle.height * scale);</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">                    if (Intersector.overlaps(scaledRectangle, playerBounds)) {</span>
+<span class="nc" id="L94">                        return true;</span>
+                    }
+                }
+<span class="nc" id="L97">            }</span>
+        }
+<span class="nc" id="L99">        return false;</span>
+    }
+
+    /**
+     * Retrieves the spawn point from the map based on a defined layer.
+     * @return A Vector2 representing the spawn point coordinates. Returns a default value if not found.
+     */
+    public Vector2 getSpawnPoint() {
+<span class="nc" id="L107">        MapLayer layer = tiledMap.getLayers().get(&quot;spawn_point&quot;);</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        if (layer != null) {</span>
+<span class="nc" id="L109">            RectangleMapObject object = layer.getObjects().getByType(RectangleMapObject.class).first();</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">            if (object != null) {</span>
+<span class="nc" id="L111">                Rectangle spawn_rectangle = object.getRectangle();</span>
+<span class="nc" id="L112">                return new Vector2(spawn_rectangle.x * scale, spawn_rectangle.y * scale);</span>
+            }
+        }
+<span class="nc" id="L115">        return new Vector2(1000, 800);</span>
+    }
+
+    /**
+     * Checks whether the player is within any of the buildings and toggles the visibility of the roof of any building the player is in
+     * @param Position position of the player
+     * @param width the width of the player sprite
+     * @param height the height of the players sprite
+     */
+    public void insideCheck(Vector2 Position, float width, float height){
+        //house
+<span class="nc bnc" id="L126" title="All 8 branches missed.">        if((isInArea(Position, width, height, &quot;house_layer&quot;) &amp;&amp; !inHouse) || (!isInArea(Position, width, height, &quot;house_layer&quot;) &amp;&amp; inHouse)){</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">            inHouse = !inHouse;</span>
+<span class="nc" id="L128">            toggleLayerVisibility(&quot;house&quot;, &quot;house_roof1&quot;);</span>
+<span class="nc" id="L129">            toggleLayerVisibility(&quot;house&quot;, &quot;house_roof2&quot;);</span>
+<span class="nc" id="L130">            toggleLayerVisibility(&quot;house&quot;, &quot;house_outside&quot;);</span>
+<span class="nc" id="L131">            toggleLayerVisibility(&quot;house&quot;, &quot;house_door_open&quot;);</span>
+        }
+
+        //Restaurant
+<span class="nc bnc" id="L135" title="All 8 branches missed.">        if((isInArea(Position, width, height, &quot;restaurant_layer&quot;) &amp;&amp; !inRestaurant) || (!isInArea(Position, width, height, &quot;restaurant_layer&quot;) &amp;&amp; inRestaurant)){</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">            inRestaurant = !inRestaurant;</span>
+<span class="nc" id="L137">            toggleLayerVisibility(&quot;restaurant&quot;, &quot;res_roof1&quot;);</span>
+<span class="nc" id="L138">            toggleLayerVisibility(&quot;restaurant&quot;, &quot;res_roof2&quot;);</span>
+<span class="nc" id="L139">            toggleLayerVisibility(&quot;restaurant&quot;, &quot;res_outdoor&quot;);</span>
+<span class="nc" id="L140">            toggleLayerVisibility(&quot;restaurant&quot;, &quot;res_door_open&quot;);</span>
+        }
+
+        //computer science building
+<span class="nc bnc" id="L144" title="All 8 branches missed.">        if((isInArea(Position, width, height, &quot;cs_layer&quot;) &amp;&amp; !inCS) || (!isInArea(Position, width, height, &quot;cs_layer&quot;) &amp;&amp; inCS)){</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">            inCS = !inCS;</span>
+<span class="nc" id="L146">            toggleLayerVisibility(&quot;cs_building&quot;, &quot;cs_roof1&quot;);</span>
+<span class="nc" id="L147">            toggleLayerVisibility(&quot;cs_building&quot;, &quot;cs_roof2&quot;);</span>
+<span class="nc" id="L148">            toggleLayerVisibility(&quot;cs_building&quot;, &quot;cs_roof3&quot;);</span>
+        }
+<span class="nc" id="L150">    }</span>
+
+    /**
+     * Disposes of the resources used by the GameMap, the TiledMap and its renderer.
+     */
+    public void dispose() {
+<span class="nc" id="L156">        tiledMap.dispose();</span>
+<span class="nc" id="L157">        renderer.dispose();</span>
+
+<span class="nc" id="L159">    }</span>
+
+    public Map getTiledMap() {
+<span class="nc" id="L162">        return this.tiledMap;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StatsTracker.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tests</a> &gt; <a href="index.source.html" class="el_package">com.mygdx</a> &gt; <span class="el_source">StatsTracker.java</span></div><h1>StatsTracker.java</h1><pre class="source lang-java linenums">package com.mygdx;
+
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+
+/**
+ * a class that stores the statistics of all total activities done by the players, Including:
+ * -hours studied
+ * -hours relaxed
+ * -time slept
+ * -meals eaten
+ */
+public class StatsTracker {
+    public int hoursSlept, minutesSlept, hoursStudied, hoursRelaxed, mealsEaten;
+
+    public int eatStreak, studyStreak, relaxStreak;
+
+    public int highestEatStreak, highestStudyStreak, highestRelaxStreak;
+
+    public String[] grade;
+
+    public int scoreTotal;
+    private BitmapFont font; // Font used to draw text
+    private SpriteBatch batch;// Separate SpriteBatch for drawing text
+    private ShapeRenderer shapeRenderer;// used to create background shapes
+
+    private int previousStudy, previousEat, previousRelax;
+    /**
+     * Initialises the StatsTracker class, sets all attributes to 0
+     */
+<span class="fc" id="L33">    public StatsTracker(){</span>
+<span class="fc" id="L34">        hoursSlept = 0;</span>
+<span class="fc" id="L35">        minutesSlept = 0;</span>
+<span class="fc" id="L36">        hoursStudied = 0;</span>
+<span class="fc" id="L37">        hoursRelaxed = 0;</span>
+<span class="fc" id="L38">        mealsEaten = 0;</span>
+<span class="fc" id="L39">        eatStreak = 0;</span>
+<span class="fc" id="L40">        studyStreak = 0;</span>
+<span class="fc" id="L41">        relaxStreak = 0;</span>
+<span class="fc" id="L42">        previousStudy = 0;</span>
+<span class="fc" id="L43">        previousRelax = 0;</span>
+<span class="fc" id="L44">        previousEat = 0;</span>
+<span class="fc" id="L45">        highestEatStreak = 0;</span>
+<span class="fc" id="L46">        highestStudyStreak = 0;</span>
+<span class="fc" id="L47">        highestRelaxStreak = 0;</span>
+<span class="fc" id="L48">    }</span>
+
+    /**
+     * sets up the trackers shape renderer, font and sprite batch to work with the current screen
+     */
+    public void setup(){
+<span class="nc" id="L54">        font = new BitmapFont();</span>
+<span class="nc" id="L55">        batch = new SpriteBatch();</span>
+<span class="nc" id="L56">        shapeRenderer = new ShapeRenderer();</span>
+<span class="nc" id="L57">    }</span>
+    /**
+     * keeps track of the eating streak
+     */
+    public void setEatStreak(int day){
+
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">       if (day != previousEat) {</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">           if (day == previousEat + 1) {</span>
+<span class="fc" id="L65">               eatStreak++;</span>
+           } else {
+<span class="fc" id="L67">               eatStreak = 0;</span>
+           }
+<span class="fc" id="L69">           isHighestEat(eatStreak);</span>
+<span class="fc" id="L70">           previousEat = day;</span>
+       }
+<span class="fc" id="L72">    }</span>
+    /**
+     * keeps track of the study streak
+     */
+    public void setStudyStreak(int day) {
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">        if (day != previousStudy) {</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">            if (day == previousStudy + 1) {</span>
+<span class="fc" id="L79">                studyStreak++;</span>
+            } else {
+<span class="fc" id="L81">                studyStreak = 1;</span>
+            }
+<span class="fc" id="L83">            isHighestStudy(studyStreak);</span>
+<span class="fc" id="L84">            previousStudy = day;</span>
+        }
+<span class="fc" id="L86">    }</span>
+    /**
+     * keeps track of the relax streak
+     */
+    public void setRelaxStreak(int day){
+
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (day != previousRelax) {</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">            if (day == previousRelax + 1) {</span>
+<span class="fc" id="L94">                relaxStreak++;</span>
+            } else {
+<span class="fc" id="L96">                relaxStreak = 1;</span>
+            }
+<span class="fc" id="L98">            isHighestRelax(relaxStreak);</span>
+<span class="fc" id="L99">            previousRelax = day;</span>
+        }
+<span class="fc" id="L101">    }</span>
+
+    /**
+     * increases the hours and minutes slept by the given values
+     * @param hours the number of hours to add
+     * @param minutes the number of minutes to add
+     */
+    public void addSleep(int hours, int minutes){
+<span class="fc" id="L109">        hoursSlept += hours;</span>
+<span class="fc" id="L110">        minutesSlept += minutes;</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">        if (minutesSlept &gt;= 60){ //makes it so that 60 minutes is converted into 1 hour</span>
+<span class="nc" id="L112">            hoursSlept += 1;</span>
+<span class="nc" id="L113">            minutesSlept -= 60;</span>
+        }
+<span class="fc" id="L115">    }</span>
+    /**
+     * increases hoursStudied attribute by given amount
+     * @param hours the number of hours to increase by
+     */
+    public void addStudy(int hours, int day){
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">        if (day == previousStudy + 1) {</span>
+<span class="fc" id="L122">            hoursStudied += hours + studyStreak;</span>
+        } else {
+<span class="nc" id="L124">            hoursStudied += hours;</span>
+        }
+<span class="fc" id="L126">    }</span>
+    /**
+     * increases hoursRelaxed attribute by given amount
+     * @param hours the number of hours to increase by
+     */
+    public void addRelax(int hours, int day){
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">        if (day == previousRelax + 1) {</span>
+<span class="fc" id="L133">            hoursRelaxed += hours + relaxStreak;</span>
+        } else {
+<span class="nc" id="L135">            hoursRelaxed += hours;</span>
+        }
+<span class="fc" id="L137">    }</span>
+
+    /**
+     * increases mealsEaten attribute by 1
+     */
+    public void mealAte(int day){
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">        if (day == previousEat + 1){</span>
+<span class="fc" id="L144">            mealsEaten += 1 + eatStreak;</span>
+        } else {
+<span class="nc" id="L146">            mealsEaten++;</span>
+        }
+<span class="fc" id="L148">    }</span>
+
+    /**
+     * gives the hours the student has slept for
+     * @return integer hoursSlept
+     */
+    public int getSleepHours(){
+<span class="fc" id="L155">        return hoursSlept;</span>
+    }
+    /**
+     * gives the minutes the student has slept for
+     * @return integer minutesSlept
+     */
+    public int getSleepMinutes(){
+<span class="fc" id="L162">        return minutesSlept;</span>
+    }
+    /**
+     * gives the hours the student has studied for
+     * @return integer hoursStudied
+     */
+    public int getStudy(){
+<span class="fc" id="L169">        return hoursStudied;</span>
+    }
+    /**
+     * gives the hours the student has relaxed for
+     * @return integer hoursRelaxed
+     */
+    public int getRelax(){
+<span class="fc" id="L176">        return hoursRelaxed;</span>
+    }
+    /**
+     * gives the number of meals the student has eaten
+     * @return integer mealsEaten
+     */
+    public int getMeals(){
+<span class="fc" id="L183">        return mealsEaten;</span>
+    }
+
+    /**
+     * renders the statistics of the players interactions in the bottom left of the screen with a background
+     */
+    public void render(){
+<span class="nc" id="L190">        float height = 90;</span>
+<span class="nc" id="L191">        float width = 125;</span>
+<span class="nc" id="L192">        float x = 30;</span>
+<span class="nc" id="L193">        float y = 30;</span>
+
+        //draw background box
+<span class="nc" id="L196">        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);</span>
+<span class="nc" id="L197">        shapeRenderer.setColor(Color.DARK_GRAY);</span>
+<span class="nc" id="L198">        shapeRenderer.rect(x - 5, y - 20, width + 5, height);</span>
+<span class="nc" id="L199">        shapeRenderer.end();</span>
+
+        //draw the text for the statistics
+<span class="nc" id="L202">        batch.begin();</span>
+<span class="nc" id="L203">        font.draw(batch, &quot;Time slept: &quot;+String.format(&quot;%02d:%02d&quot;, getSleepHours(), getSleepMinutes()), x, y);</span>
+<span class="nc" id="L204">        font.draw(batch, &quot;Hours studying: &quot;+getStudy(), x, y + 20);</span>
+<span class="nc" id="L205">        font.draw(batch, &quot;Hours relaxing: &quot;+getRelax(), x, y + 40);</span>
+<span class="nc" id="L206">        font.draw(batch, &quot;Meals eaten: &quot;+getMeals(), x, y + 60);</span>
+<span class="nc" id="L207">        batch.end();</span>
+<span class="nc" id="L208">    }</span>
+
+    /**
+     * returns the total score of the player
+     * @return integer scoreTotal
+     */
+    public int getScoreTotal(){
+<span class="fc" id="L215">        scoreTotal =  hoursStudied + hoursRelaxed + mealsEaten;</span>
+<span class="fc" id="L216">        return scoreTotal;</span>
+    }
+    /**
+     * @return the grade score
+     */
+    public int getGradeScore(){
+<span class="fc" id="L222">        double studyScore = hoursStudied*10;</span>
+<span class="fc" id="L223">        double relaxScore = (double) hoursRelaxed /7;</span>
+<span class="fc" id="L224">        double eatScore = ((int)(mealsEaten/7))+0.5;</span>
+<span class="fc" id="L225">        int gradeScore = (int) (studyScore*relaxScore*eatScore);</span>
+<span class="fc bfc" id="L226" title="All 2 branches covered.">        if (gradeScore&gt;=100){</span>
+<span class="fc" id="L227">            gradeScore = 100;</span>
+        }
+<span class="fc" id="L229">        return gradeScore;</span>
+    }
+    /**
+     * @return the grade of the player based on the score
+     */
+    public String getGrade(){
+<span class="fc" id="L235">        grade = new String[]{&quot;GRADE: FAIL, Did You Even Try?&quot;, &quot;GRADE: FAIL, Did You Even Try?&quot;, &quot;GRADE: FAIL, Did You Even Try?&quot;, &quot;GRADE: FAIL, Did You Even Try?&quot;,</span>
+                &quot;GRADE: D, At Least You Didnt Fail&quot;,&quot;GRADE: C, Alright; Try Again&quot;, &quot;GRADE: B, You Did Well; Could You Do Better?&quot;,
+                &quot;GRADE: A+, Well Done; You Got The Top Score!!&quot;, &quot;GRADE: A+, Well Done; You Got The Top Score!!&quot;, &quot;GRADE: A+, Well Done; You Got The Top Score!!&quot;, &quot;GRADE: A+, Well Done; You Got The Top Score!!&quot;};
+<span class="fc" id="L238">        int index = Math.min(getGradeScore() / 10, grade.length - 1);</span>
+<span class="fc" id="L239">        return grade[index];</span>
+    }
+    /**
+     * saves the new streak to the highest
+     */
+    public void isHighestEat(int streak){
+<span class="fc bfc" id="L245" title="All 2 branches covered.">        if (streak &gt; highestEatStreak){</span>
+<span class="fc" id="L246">            highestEatStreak = streak;</span>
+        }
+<span class="fc" id="L248">    }</span>
+    /**
+     * saves the new streak to the highest
+     */
+    public void isHighestStudy(int streak){
+<span class="fc bfc" id="L253" title="All 2 branches covered.">        if (streak &gt; highestStudyStreak){</span>
+<span class="fc" id="L254">            highestStudyStreak = streak;</span>
+        }
+<span class="fc" id="L256">    }</span>
+    /**
+     * saves the new streak to the highest
+     */
+    public void isHighestRelax(int streak){
+<span class="fc bfc" id="L261" title="All 2 branches covered.">        if (streak &gt; highestRelaxStreak){</span>
+<span class="fc" id="L262">            highestRelaxStreak = streak;</span>
+        }
+<span class="fc" id="L264">    }</span>
+    /**
+     * Dispose of the resources used by the class, to prevent memory leaks.
+     */
+    public void dispose(){
+<span class="nc" id="L269">        batch.dispose();</span>
+<span class="nc" id="L270">        font.dispose();</span>
+<span class="nc" id="L271">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

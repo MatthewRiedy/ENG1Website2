@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MenuScreen.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tests</a> &gt; <a href="index.source.html" class="el_package">com.mygdx</a> &gt; <span class="el_source">MenuScreen.java</span></div><h1>MenuScreen.java</h1><pre class="source lang-java linenums">package com.mygdx;
+
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+
+import java.util.List;
+
+
+/**
+ * Represents the main menu screen of the game, providing options to start the game,
+ * access settings, or exit the application.
+ */
+public class MenuScreen implements Screen {
+    //variables
+    private Stage stage; // The stage that holds and manages UI elements
+    private Game game; // Reference to the maain game object to allow screen switching
+    private Skin skin; // The skin used for styling UI components
+
+    /**
+     * Constructs the menu screen with the game context and skin for UI styling
+     * @param game The main game object for managing screens
+     * @param skin The skin for styling
+     */
+<span class="nc" id="L37">    public MenuScreen(Game game, Skin skin){</span>
+<span class="nc" id="L38">        this.game = game;</span>
+<span class="nc" id="L39">        this.skin = skin;</span>
+<span class="nc" id="L40">    }</span>
+
+    @Override
+    public void show() {
+        // Create and configure the stage with a viewport matching the screen size
+<span class="nc" id="L45">        stage = new Stage(new StretchViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));</span>
+<span class="nc" id="L46">        Gdx.input.setInputProcessor(stage); // Set the stage to process UI input events</span>
+
+        // Create a layout table and set it to fill the stage
+<span class="nc" id="L49">        Table mainTable = new Table();</span>
+<span class="nc" id="L50">        mainTable.setFillParent(true);</span>
+<span class="nc" id="L51">        mainTable.top().center();</span>
+
+        // Defining the buttons
+<span class="nc" id="L54">        TextButton startButton = new TextButton(&quot;Start Game&quot;, skin);</span>
+<span class="nc" id="L55">        TextButton settingButton = new TextButton(&quot;Settings&quot;, skin);</span>
+<span class="nc" id="L56">        TextButton exitButton = new TextButton(&quot;Exit&quot;, skin);</span>
+
+        // Calculate size for buttons
+<span class="nc" id="L59">        float buttonWidth = Gdx.graphics.getWidth() * 0.4f;</span>
+<span class="nc" id="L60">        float buttonHeight = Gdx.graphics.getHeight() * 0.1f;</span>
+
+        // Setting button sizes
+<span class="nc" id="L63">        startButton.setSize(buttonWidth, buttonHeight);</span>
+<span class="nc" id="L64">        settingButton.setSize(buttonWidth, buttonHeight);</span>
+<span class="nc" id="L65">        exitButton.setSize(buttonWidth, buttonHeight);</span>
+
+        // Add buttons in table with appropriate spacing
+<span class="nc" id="L68">        mainTable.add(startButton).padBottom(20); // Add start button with bottom padding</span>
+<span class="nc" id="L69">        mainTable.add(settingButton).padBottom(20);</span>
+<span class="nc" id="L70">        mainTable.add(exitButton).padBottom(20); // Add exit button with bottom padding</span>
+
+<span class="nc" id="L72">        List&lt;Leaderboard.LeaderboardEntry&gt; leaderboardEntries = Leaderboard.loadLeaderboard();</span>
+
+
+<span class="nc" id="L75">        mainTable.row();</span>
+
+<span class="nc" id="L77">        mainTable.add(new Label(&quot;Leaderboard&quot;, skin)).padTop(20).colspan(3).row();</span>
+
+
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        for (int i = 0; i &lt; leaderboardEntries.size(); i++){</span>
+<span class="nc" id="L81">            Leaderboard.LeaderboardEntry entry = leaderboardEntries.get(i);</span>
+<span class="nc" id="L82">            mainTable.add(new Label(String.valueOf(i + 1), skin)).pad(5);</span>
+<span class="nc" id="L83">            mainTable.add(new Label(entry.getName(), skin)).pad(5);</span>
+<span class="nc" id="L84">            mainTable.add(new Label(String.valueOf(entry.getScore()), skin)).pad(5);</span>
+<span class="nc" id="L85">            mainTable.row();</span>
+        }
+
+
+
+
+
+
+        // Start button: Resets game preferences and switches to game screen
+<span class="nc" id="L94">        startButton.addListener(new ClickListener(){</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+<span class="nc" id="L97">                Preferences preferences = Gdx.app.getPreferences(&quot;game_prefs&quot;);</span>
+<span class="nc" id="L98">                preferences.clear();</span>
+<span class="nc" id="L99">                preferences.flush();</span>
+<span class="nc" id="L100">                game.setScreen(new GameScreen(game, skin));</span>
+<span class="nc" id="L101">            }</span>
+        });
+
+        // Exit button: Closes the game
+<span class="nc" id="L105">        exitButton.addListener(new ChangeListener() {</span>
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+<span class="nc" id="L108">                Gdx.app.exit();</span>
+<span class="nc" id="L109">            }</span>
+        });
+
+        // Settings button: Switches to the settings screen
+<span class="nc" id="L113">        settingButton.addListener(new ClickListener() {</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+<span class="nc" id="L116">                game.setScreen(new SettingScreen(game, skin));</span>
+<span class="nc" id="L117">            }</span>
+        });
+
+
+<span class="nc" id="L121">        stage.addActor(mainTable);</span>
+<span class="nc" id="L122">    }</span>
+
+
+
+    @Override
+    public void render(float v) {
+<span class="nc" id="L128">        Gdx.gl.glClearColor(0.5f, 0.5f, 0.5f, 1);</span>
+<span class="nc" id="L129">        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);</span>
+<span class="nc" id="L130">        stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));</span>
+<span class="nc" id="L131">        stage.draw();</span>
+<span class="nc" id="L132">    }</span>
+
+    @Override
+    public void resize(int width, int height) {
+<span class="nc" id="L136">        stage.getViewport().update(width, height, true);</span>
+<span class="nc" id="L137">    }</span>
+
+    @Override
+    public void pause() {
+
+<span class="nc" id="L142">    }</span>
+
+    @Override
+    public void resume() {
+
+<span class="nc" id="L147">    }</span>
+
+    @Override
+    public void hide() {
+<span class="nc" id="L151">        dispose();</span>
+<span class="nc" id="L152">    }</span>
+
+    /**
+     * Dispose of the resources used, to prevent memory leaks
+     */
+    @Override
+    public void dispose() {
+<span class="nc" id="L159">        stage.dispose();</span>
+<span class="nc" id="L160">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

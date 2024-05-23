@@ -1,0 +1,612 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameScreen.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tests</a> &gt; <a href="index.source.html" class="el_package">com.mygdx</a> &gt; <span class="el_source">GameScreen.java</span></div><h1>GameScreen.java</h1><pre class="source lang-java linenums">package com.mygdx;
+
+import com.badlogic.gdx.*;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
+
+/**
+ * Represents the primary game screen where the player interacts with different gameplay elements
+ * It handles rendering of the game world, player movement, and interaction with game objects and menus for activities like studying,
+ * relaxing, sleeping and eating.
+ */
+public class GameScreen extends ScreenAdapter {
+    // Fields for managing game state and UI
+
+
+    private Game game; // Reference for the main game class
+    private Skin skin; // Skin for styling
+    private BitmapFont font; // Font for UI Text
+    private LabelStyle menuTextStyle; // Style for UI labels
+
+    //Tables for different activity menus
+    private Table studyTable;
+    private Table relaxTable;
+    private Table sleepTable;
+    private Table eatTable;
+    private Table insufficientTable;
+
+    private Stage stage; // Stage for managing UI elements
+    private Table currentTable; // Currently active table
+    // Gameplay-related fields
+    protected CameraManager cameraHandler; // Manages the camera for game rendering.
+    protected OrthographicCamera camera; // Camera for viewing the game world.
+    private SpriteBatch batch; // Batch for rendering textures
+    private Player player; // Player character
+    private Vector2 characterPosition; // Current position of the player
+    public Preferences prefs; // Preferences for saving/loading game state
+    private GameMap gameMap; // The game map
+    // Tracks game statistics which include study hours, meals eaten, hours relaxed and hours slept
+    private StatsTracker stats;
+    private EnergyMeter energyMeter; // Tracks and displays the player's energy levels.
+    private DayCycleManager dayCycleManager; // Manages the in-game day cycle and time passage
+
+    private Leaderboard leaderboard;
+
+    /**
+     * Contructs the game screen with references to the game object and skin
+     * Initializes game components like player, map, stats tracker, energy meter and day cycle manager
+     * @param game
+     * @param skin
+     */
+<span class="nc" id="L68">    public GameScreen(Game game, Skin skin) {</span>
+<span class="nc" id="L69">        this.game = game;</span>
+<span class="nc" id="L70">        this.skin = skin;</span>
+<span class="nc" id="L71">        font = new BitmapFont();</span>
+<span class="nc" id="L72">        prefs = Gdx.app.getPreferences(&quot;game_prefs&quot;);</span>
+
+        // Initialization of game components
+<span class="nc" id="L75">        stats = new StatsTracker();</span>
+<span class="nc" id="L76">        dayCycleManager = new DayCycleManager(game, skin, leaderboard, stats);</span>
+<span class="nc" id="L77">        gameMap = new GameMap(&quot;maps/map.tmx&quot;);</span>
+
+        // Player spawn position initialization
+<span class="nc" id="L80">        Vector2 spawnPoint = gameMap.getSpawnPoint();</span>
+<span class="nc" id="L81">        float characterX = prefs.getFloat(&quot;characterX&quot;, spawnPoint.x);</span>
+<span class="nc" id="L82">        float characterY = prefs.getFloat(&quot;characterY&quot;, spawnPoint.y);</span>
+<span class="nc" id="L83">        Vector2 characterPosition = new Vector2(characterX, characterY);</span>
+
+<span class="nc" id="L85">        player = new Player(new Texture(&quot;character/down_idle_1.png&quot;), characterPosition.x, characterPosition.y, 5, gameMap);</span>
+<span class="nc" id="L86">        player.create();</span>
+
+<span class="nc" id="L88">        energyMeter = new EnergyMeter();</span>
+
+<span class="nc" id="L90">    }</span>
+
+    /**
+     * Sets up UI elements and initializes gameplay systems\
+     * Called when the game screen becomes active.
+     */
+    @Override
+    public void show() {
+<span class="nc" id="L98">        batch = new SpriteBatch();</span>
+
+        // Create all the interaction menus and the stage they use to display
+<span class="nc" id="L101">        stage = new Stage(new StretchViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));</span>
+<span class="nc" id="L102">        menuTextStyle = new LabelStyle(font, Color.WHITE);</span>
+<span class="nc" id="L103">        createStudy();</span>
+<span class="nc" id="L104">        createRelax();</span>
+<span class="nc" id="L105">        createSleep();</span>
+<span class="nc" id="L106">        createEat();</span>
+<span class="nc" id="L107">        createInsufficient();</span>
+<span class="nc" id="L108">        currentTable = null;</span>
+
+<span class="nc" id="L110">        characterPosition = getCharacterPosition();</span>
+
+<span class="nc" id="L112">        cameraHandler = new CameraManager(characterPosition);</span>
+<span class="nc" id="L113">        camera = cameraHandler.camera;</span>
+<span class="nc" id="L114">        camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());</span>
+
+<span class="nc" id="L116">        Gdx.input.setInputProcessor(stage);</span>
+
+        // Setup gameplay components
+<span class="nc" id="L119">        energyMeter.setup();</span>
+<span class="nc" id="L120">        dayCycleManager.setup();</span>
+<span class="nc" id="L121">        stats.setup();</span>
+
+<span class="nc" id="L123">    }</span>
+
+    /**
+     * The core game loop, processes input, updates the game state, and renders the game world.
+     * @param delta The time in seconds since the last render.
+     */
+    @Override
+    public void render(float delta) {
+
+        // Handle Input
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){</span>
+<span class="nc" id="L134">            saveCharacterPosition();</span>
+<span class="nc" id="L135">            game.setScreen(new inGameMenu(game, skin, this));</span>
+        }
+<span class="nc" id="L137">        handleInput();</span>
+
+        // Update game components
+<span class="nc" id="L140">        gameMap.update(delta);</span>
+<span class="nc" id="L141">        dayCycleManager.update(delta);</span>
+
+        // Update character position
+<span class="nc" id="L144">        Vector2 characterPosition = getCharacterPosition();</span>
+
+<span class="nc" id="L146">        gameMap.insideCheck(characterPosition, player.getWidth(), player.getHeight());</span>
+<span class="nc" id="L147">        gameMap.insideCheck(characterPosition, player.getWidth(), player.getHeight());</span>
+
+<span class="nc" id="L149">        checkInteract(); // Check for interactions</span>
+
+        // Update the camera based on player movement
+<span class="nc" id="L152">        cameraHandler.update(delta, characterPosition);</span>
+<span class="nc" id="L153">        batch.setProjectionMatrix(camera.combined);</span>
+
+        // Clear the screen
+<span class="nc" id="L156">        Gdx.gl.glClearColor(0, 0, 0.2f, 1);</span>
+<span class="nc" id="L157">        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);</span>
+
+        // Render game elements
+<span class="nc" id="L160">        gameMap.render(camera);</span>
+<span class="nc" id="L161">        player.render(delta, camera);</span>
+<span class="nc" id="L162">        energyMeter.render();</span>
+<span class="nc" id="L163">        dayCycleManager.render();</span>
+<span class="nc" id="L164">        stats.render();</span>
+
+        // Draw UI Elements
+<span class="nc" id="L167">        batch.begin();</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">        if (currentTable != null){</span>
+<span class="nc" id="L169">            font.draw(batch, &quot;press E \n&quot; +</span>
+                    &quot; to interact&quot;, characterPosition.x+20, characterPosition.y - 20);
+        }
+<span class="nc" id="L172">        batch.end();</span>
+
+<span class="nc" id="L174">        stage.act(delta);</span>
+<span class="nc" id="L175">        stage.draw();</span>
+
+
+
+<span class="nc" id="L179">    }</span>
+
+    /**
+     * Handles player input for movement and interactions
+     */
+    private void handleInput() {
+        // Start to move the player when a key is pressed
+<span class="nc bnc" id="L186" title="All 4 branches missed.">        if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) {</span>
+<span class="nc" id="L187">            player.moveUp();</span>
+<span class="nc bnc" id="L188" title="All 4 branches missed.">        } else if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {</span>
+<span class="nc" id="L189">            player.moveDown();</span>
+        }
+
+<span class="nc bnc" id="L192" title="All 4 branches missed.">        if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {</span>
+<span class="nc" id="L193">            player.moveLeft();</span>
+<span class="nc bnc" id="L194" title="All 4 branches missed.">        } else if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {</span>
+<span class="nc" id="L195">            player.moveRight();</span>
+        }
+
+        // Stop the player if no keys are pressed
+<span class="nc bnc" id="L199" title="All 8 branches missed.">        if (!(Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) &amp;&amp; !(Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN))) {</span>
+<span class="nc" id="L200">            player.stopMovingUp();</span>
+<span class="nc" id="L201">            player.stopMovingDown();</span>
+        }
+
+<span class="nc bnc" id="L204" title="All 8 branches missed.">        if (!(Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) &amp;&amp; !(Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT))) {</span>
+<span class="nc" id="L205">            player.stopMovingLeft();</span>
+<span class="nc" id="L206">            player.stopMovingRight();</span>
+        }
+
+        // Interaction handling
+<span class="nc bnc" id="L210" title="All 6 branches missed.">        if (Gdx.input.isKeyPressed(Input.Keys.E) &amp;&amp; stage.getActors().size == 0 &amp;&amp; currentTable!= null){</span>
+<span class="nc" id="L211">            stage.addActor(currentTable);</span>
+        }
+<span class="nc" id="L213">    }</span>
+
+    /**
+     * Retrieves and updates the character's current position
+     * @return the current position of the player character
+     */
+    public Vector2 getCharacterPosition(){
+<span class="nc" id="L220">        characterPosition = new Vector2(player.position.x, player.position.y);</span>
+<span class="nc" id="L221">        return characterPosition;</span>
+    }
+
+    /**
+     * Pauses the game, saving the player's current position
+     * The method is called automatically when the game is paused, such as when the application loses focus
+     */
+    @Override
+    public void pause(){
+        // Logs the pausing action with the current player position
+<span class="nc" id="L231">        System.out.println(&quot;GameScreen Pausing game, saving character position: &quot; + player.position);</span>
+        // Saves the player's current position to preferences
+<span class="nc" id="L233">        prefs.putFloat(&quot;characterX&quot;, player.position.x);</span>
+<span class="nc" id="L234">        prefs.putFloat(&quot;characterY&quot;, player.position.y);</span>
+        // Commits the changes to preferences
+<span class="nc" id="L236">        prefs.flush();</span>
+<span class="nc" id="L237">    }</span>
+
+    /**
+     * Saves the player's current position
+     * This method is useful for manual calls to save the player position
+     */
+    private void saveCharacterPosition(){
+        // Saves the player's current position to preferences
+<span class="nc" id="L245">        prefs.putFloat(&quot;characterX&quot;, player.position.x);</span>
+<span class="nc" id="L246">        prefs.putFloat(&quot;characterY&quot;, player.position.y);</span>
+        // Commits the changes to preferences
+<span class="nc" id="L248">        prefs.flush();</span>
+<span class="nc" id="L249">        System.out.println(&quot;Saving character position: &quot; + player.position);</span>
+
+<span class="nc" id="L251">    }</span>
+
+    /**
+     * Resumes the game, loading the player's saved position
+     * This method is called automatically when the game resumes from a paused state
+     */
+    @Override
+    public void resume(){
+        // Retrieves the player's saved position from preferences
+<span class="nc" id="L260">        float characterX = prefs.getFloat(&quot;characterX&quot;, 1955);</span>
+<span class="nc" id="L261">        float characterY = prefs.getFloat(&quot;characterY&quot;, 1511);</span>
+        // Sets the player's position to the retrieved values
+<span class="nc" id="L263">        player.position.set(characterX, characterY);</span>
+<span class="nc" id="L264">        System.out.println(&quot;GameScreen Resuming game, loading character position: &quot; + player.position);</span>
+<span class="nc" id="L265">    }</span>
+
+    /**
+     * Adjusts the camera's viewport size in response to the window being resized
+     * @param width The new width of the window
+     * @param height The new height of the window
+     */
+    @Override
+    public void resize(int width, int height) {
+        // Adjusts the camera's viewport to match the new window size
+<span class="nc" id="L275">        camera.setToOrtho(false, width, height);</span>
+<span class="nc" id="L276">    }</span>
+
+    /**
+     * Disposes of the game's resources
+     * This method is called when the game is closing to ensure that memory leaks do not occur
+     */
+    @Override
+    public void dispose() {
+<span class="nc" id="L284">        stage.dispose();</span>
+<span class="nc" id="L285">        batch.dispose();</span>
+<span class="nc" id="L286">        player.dispose();</span>
+<span class="nc" id="L287">        gameMap.dispose();</span>
+<span class="nc" id="L288">        dayCycleManager.dispose();</span>
+<span class="nc" id="L289">        energyMeter.dispose();</span>
+<span class="nc" id="L290">        stats.dispose();</span>
+        // Dispose other resources here
+<span class="nc" id="L292">    }</span>
+
+    /**
+     * checks if the player is within any of the interactable regions and sets the currentTable according to which area they are in
+     */
+    private void checkInteract(){
+        // Checks for interaction areas and sets the current table accordingly
+<span class="nc bnc" id="L299" title="All 2 branches missed.">        if(gameMap.isInArea(characterPosition, player.getWidth(), player.getHeight(), &quot;study_interact&quot;)){</span>
+<span class="nc" id="L300">            currentTable = studyTable;</span>
+        }
+<span class="nc bnc" id="L302" title="All 2 branches missed.">        else if(gameMap.isInArea(characterPosition, player.getWidth(), player.getHeight(), &quot;relax_interact&quot;)){</span>
+<span class="nc" id="L303">            currentTable = relaxTable;</span>
+        }
+<span class="nc bnc" id="L305" title="All 2 branches missed.">        else if(gameMap.isInArea(characterPosition, player.getWidth(), player.getHeight(), &quot;eat_interact&quot;)){</span>
+<span class="nc" id="L306">            currentTable = eatTable;</span>
+        }
+<span class="nc bnc" id="L308" title="All 2 branches missed.">        else if(gameMap.isInArea(characterPosition, player.getWidth(), player.getHeight(), &quot;sleep_interact&quot;)){</span>
+<span class="nc" id="L309">            currentTable = sleepTable;</span>
+        }
+        else {
+<span class="nc bnc" id="L312" title="All 2 branches missed.">            if(currentTable != null){</span>
+<span class="nc" id="L313">                currentTable.remove();</span>
+            }
+<span class="nc" id="L315">            currentTable = null;</span>
+        }
+
+<span class="nc" id="L318">    }</span>
+
+
+    /**
+     * creates the menu for studying
+     */
+    private void createStudy(){
+        // Initialize the table that holds the study menu UI components
+<span class="nc" id="L326">        studyTable = new Table();</span>
+        // Create a title label and add it to the table
+<span class="nc" id="L328">        Label studyTitle = new Label(&quot;Study for how many hours?&quot;, menuTextStyle);</span>
+        // Initialize a slider for selecting the number of study hours (1 to 5)
+<span class="nc" id="L330">        Slider studyTime = new Slider(1, 5, 1, false ,skin);</span>
+        // Initialize buttons for confirming or cancelling the study action
+<span class="nc" id="L332">        TextButton studyConfirm = new TextButton(&quot;Confirm&quot;, skin);</span>
+<span class="nc" id="L333">        TextButton studyCancel = new TextButton(&quot;Cancel&quot;, skin);</span>
+        // Labels to display the selected number of hours and the corresponding energy cost
+<span class="nc" id="L335">        Label studyVal = new Label(Float.toString(studyTime.getValue()), menuTextStyle);</span>
+<span class="nc" id="L336">        Label studyCost = new Label(&quot;Cost: &quot; + Float.toString(studyTime.getValue() * 15), menuTextStyle);</span>
+
+        // Add all the labels and sliders to the table
+<span class="nc" id="L339">        studyTable.add(studyTitle);</span>
+<span class="nc" id="L340">        studyTable.row();</span>
+<span class="nc" id="L341">        studyTable.add(studyTime);</span>
+<span class="nc" id="L342">        studyTable.add(studyVal);</span>
+<span class="nc" id="L343">        studyTable.row();</span>
+<span class="nc" id="L344">        studyTable.add(studyCost);</span>
+<span class="nc" id="L345">        studyTable.row();</span>
+<span class="nc" id="L346">        studyTable.add(studyConfirm);</span>
+<span class="nc" id="L347">        studyTable.add(studyCancel);</span>
+<span class="nc" id="L348">        studyTable.setFillParent(true);</span>
+<span class="nc" id="L349">        studyTable.center();</span>
+
+        // Add a listener to the confirm button to apply the study action
+<span class="nc" id="L352">        studyCancel.addListener(new ClickListener(){</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+<span class="nc" id="L355">                studyTable.remove();</span>
+<span class="nc" id="L356">            }</span>
+        });
+
+        // Add a listener to the confirm button to apply the study action
+<span class="nc" id="L360">        studyConfirm.addListener(new ClickListener(){</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Retrieve the selected number of study hours and calculate the energy cost
+<span class="nc" id="L364">                int timePassed = (int) studyTime.getValue();</span>
+<span class="nc" id="L365">                int cost = (int) (15 * timePassed);</span>
+                // Check if the player has enough energy to study
+<span class="nc bnc" id="L367" title="All 2 branches missed.">                if(cost &lt;= energyMeter.getEnergy()){</span>
+                    // Deduct the energy cost and add the study hours to the player's stats
+<span class="nc" id="L369">                    energyMeter.loseEnergy(cost);</span>
+<span class="nc" id="L370">                    stats.addStudy((int) timePassed, dayCycleManager.day);</span>
+<span class="nc" id="L371">                    stats.setStudyStreak(dayCycleManager.day);</span>
+                    // Advance the in-game time accordingly
+<span class="nc" id="L373">                    dayCycleManager.addTime(timePassed, 0);</span>
+<span class="nc" id="L374">                    studyTable.remove(); // Remove the study menu</span>
+                }
+                else{
+                    // If not enough energy, display the insufficient energy popup
+<span class="nc" id="L378">                    stage.addActor(insufficientTable);</span>
+<span class="nc" id="L379">                    studyTable.remove();</span>
+                }
+<span class="nc" id="L381">            }</span>
+        });
+
+        // Add a listener to the slider to update the displayed values when the slider is moved
+<span class="nc" id="L385">        studyTime.addListener(new ChangeListener(){</span>
+            public void changed(ChangeEvent event, Actor actor){
+<span class="nc" id="L387">                studyVal.setText(Float.toString(studyTime.getValue())); // Update the displayed hours</span>
+<span class="nc" id="L388">                studyCost.setText(&quot;Cost: &quot; + Float.toString(studyTime.getValue() * 15));  // Update the cost</span>
+<span class="nc" id="L389">            }</span>
+        });
+
+<span class="nc" id="L392">    }</span>
+
+    /**
+     * creates the menu for recreational interactions
+     */
+    private void createRelax(){
+        // Initialize the table for relaxation menu
+<span class="nc" id="L399">        relaxTable = new Table();</span>
+        // Create and style the title label for relaxation
+<span class="nc" id="L401">        Label relaxTitle = new Label(&quot;relax for how many hours?&quot;, menuTextStyle);</span>
+        // Slider for selecting relaxation duration
+<span class="nc" id="L403">        Slider relaxTime = new Slider(1, 5, 1, false ,skin);</span>
+        // Buttons for confirming or cancelling the relaxation
+<span class="nc" id="L405">        TextButton relaxConfirm = new TextButton(&quot;Confirm&quot;, skin);</span>
+<span class="nc" id="L406">        TextButton relaxCancel = new TextButton(&quot;Cancel&quot;, skin);</span>
+        // Labels for displaying the selected time and the energy cost of relaxation
+<span class="nc" id="L408">        Label relaxVal = new Label(Float.toString(relaxTime.getValue()), menuTextStyle);</span>
+<span class="nc" id="L409">        Label relaxCost = new Label(&quot;Cost: &quot; + Float.toString(relaxTime.getValue() * 7), menuTextStyle);</span>
+
+        // Add all labels, buttons and slider to the table
+<span class="nc" id="L412">        relaxTable.add(relaxTitle);</span>
+<span class="nc" id="L413">        relaxTable.row();</span>
+<span class="nc" id="L414">        relaxTable.add(relaxTime);</span>
+<span class="nc" id="L415">        relaxTable.add(relaxVal);</span>
+<span class="nc" id="L416">        relaxTable.row();</span>
+<span class="nc" id="L417">        relaxTable.add(relaxCost);</span>
+<span class="nc" id="L418">        relaxTable.row();</span>
+<span class="nc" id="L419">        relaxTable.add(relaxConfirm);</span>
+<span class="nc" id="L420">        relaxTable.add(relaxCancel);</span>
+        // Set table to fill the parent container and center its content
+<span class="nc" id="L422">        relaxTable.setFillParent(true);</span>
+<span class="nc" id="L423">        relaxTable.center();</span>
+
+        // Listener for the cancel button to remove the table from the stage
+<span class="nc" id="L426">        relaxCancel.addListener(new ClickListener(){</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+<span class="nc" id="L429">                relaxTable.remove(); // Remove the table</span>
+<span class="nc" id="L430">            }</span>
+        });
+
+        // Listener for the confirm button to apply the relaxation action
+<span class="nc" id="L434">        relaxConfirm.addListener(new ClickListener(){</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+<span class="nc" id="L437">                int timePassed = (int) relaxTime.getValue();</span>
+<span class="nc" id="L438">                int cost = (int) (7 * timePassed); // Calculate the energy cost</span>
+<span class="nc bnc" id="L439" title="All 2 branches missed.">                if(cost &lt;= energyMeter.getEnergy()){</span>
+                    // If the player has enough energy, deduct the cost and update stats and day cycle
+<span class="nc" id="L441">                    energyMeter.loseEnergy(cost);</span>
+<span class="nc" id="L442">                    stats.addRelax((int) timePassed, dayCycleManager.day);</span>
+<span class="nc" id="L443">                    stats.setRelaxStreak(dayCycleManager.day);</span>
+<span class="nc" id="L444">                    dayCycleManager.addTime(timePassed, 0);</span>
+<span class="nc" id="L445">                    relaxTable.remove(); // Remove the table from the stage</span>
+                }
+                else{
+                    // If not enough energy, show the insufficient energy table
+<span class="nc" id="L449">                    stage.addActor(insufficientTable);</span>
+<span class="nc" id="L450">                    relaxTable.remove(); // Remove the relax table from the stage</span>
+                }
+<span class="nc" id="L452">            }</span>
+        });
+
+        // Listener for the slider to update the selected values and cost dynamically
+<span class="nc" id="L456">        relaxTime.addListener(new ChangeListener(){</span>
+            public void changed(ChangeEvent event, Actor actor){
+<span class="nc" id="L458">                relaxVal.setText(Float.toString(relaxTime.getValue())); // Update the displayed time</span>
+<span class="nc" id="L459">                relaxCost.setText(&quot;Cost: &quot; + Float.toString(relaxTime.getValue() * 7)); // Update the cost</span>
+<span class="nc" id="L460">            }</span>
+        });
+
+<span class="nc" id="L463">    }</span>
+
+    /**
+     * creates the menu for sleeping
+     */
+    private void createSleep(){
+        // Initialize the table for sleep menu
+<span class="nc" id="L470">        sleepTable = new Table();</span>
+        // Create and style the title label for the sleep prompt
+<span class="nc" id="L472">        Label sleepTitle = new Label(&quot;Sleep until 8am?&quot;, menuTextStyle);</span>
+        // Buttons for confirming or refusing sleep action
+<span class="nc" id="L474">        TextButton sleepYes = new TextButton(&quot;Yes&quot;, skin);</span>
+<span class="nc" id="L475">        TextButton sleepNo = new TextButton(&quot;No&quot;, skin);</span>
+
+        // Add all the labels and buttons to the table
+<span class="nc" id="L478">        sleepTable.add(sleepTitle);</span>
+<span class="nc" id="L479">        sleepTable.row();</span>
+<span class="nc" id="L480">        sleepTable.add(sleepYes);</span>
+<span class="nc" id="L481">        sleepTable.add(sleepNo);</span>
+        // Set the table to fill the parent container and center its content
+<span class="nc" id="L483">        sleepTable.setFillParent(true);</span>
+<span class="nc" id="L484">        sleepTable.center();</span>
+
+        // Listener for the &quot;Yes&quot; button to precess with sleep
+<span class="nc" id="L487">        sleepYes.addListener(new ClickListener(){</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Calculates the hours and minutes to sleep based on current time
+                int sleepHour;
+                int sleepMinute;
+<span class="nc" id="L493">                int currentHour = dayCycleManager.getHour();</span>
+<span class="nc" id="L494">                int currentMinute = dayCycleManager.getMinute();</span>
+<span class="nc" id="L495">                int totalTime = currentMinute + 60*currentHour;</span>
+<span class="nc bnc" id="L496" title="All 2 branches missed.">                if (currentHour &gt;= 8){</span>
+                    // If its past 8am, calculate time to next 8am
+<span class="nc" id="L498">                    int sleepTime = 24*60 - totalTime;</span>
+<span class="nc" id="L499">                    sleepHour = sleepTime / 60;</span>
+<span class="nc" id="L500">                    sleepMinute = sleepTime % 60;</span>
+<span class="nc" id="L501">                    sleepHour += 8; // Adjust to wake up at 8am next day</span>
+<span class="nc" id="L502">                }</span>
+                else {
+                    // If it's before 8am, calculate time to 8am same day
+<span class="nc" id="L505">                    int sleepTime = 8*60 - totalTime;</span>
+<span class="nc" id="L506">                    sleepHour = sleepTime / 60;</span>
+<span class="nc" id="L507">                    sleepMinute = sleepTime % 60;</span>
+                }
+                // Update game stats for sleep time and advance game time
+<span class="nc" id="L510">                stats.addSleep(sleepHour, sleepMinute);</span>
+<span class="nc" id="L511">                dayCycleManager.addTime(sleepHour, sleepMinute);</span>
+
+                // Reset player's energy to full after sleeping
+<span class="nc" id="L514">                energyMeter.resetEnergy();</span>
+
+                // Remove the sleep menu table from the stage
+<span class="nc" id="L517">                sleepTable.remove();</span>
+<span class="nc" id="L518">            }</span>
+        });
+
+        // Listener for the &quot;No&quot; button to cancel the sleep action
+<span class="nc" id="L522">        sleepNo.addListener(new ClickListener(){</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+<span class="nc" id="L525">                sleepTable.remove(); // Remove the sleep menu table from the stage</span>
+<span class="nc" id="L526">            }</span>
+        });
+<span class="nc" id="L528">    }</span>
+
+    /**
+     * creates the menu for the eating interaction
+     */
+    private void createEat(){
+        // Initialize the table for the eating menu
+<span class="nc" id="L535">        eatTable = new Table();</span>
+        // Create and style the title label for the eating prompt
+<span class="nc" id="L537">        Label eatTitle = new Label(&quot;Eat?&quot;, menuTextStyle);</span>
+        // Buttons for confirming or refusing the action to eat
+<span class="nc" id="L539">        TextButton eatYes = new TextButton(&quot;Yes&quot;, skin);</span>
+<span class="nc" id="L540">        TextButton eatNo = new TextButton(&quot;No&quot;, skin);</span>
+
+        // Add all components to the table
+<span class="nc" id="L543">        eatTable.add(eatTitle);</span>
+<span class="nc" id="L544">        eatTable.row();</span>
+<span class="nc" id="L545">        eatTable.add(eatYes);</span>
+<span class="nc" id="L546">        eatTable.add(eatNo);</span>
+        // Set the table to fill the parent container and center its content
+<span class="nc" id="L548">        eatTable.setFillParent(true);</span>
+<span class="nc" id="L549">        eatTable.center();</span>
+
+        // Listener for the &quot;Yes&quot; button to proceed with eating
+<span class="nc" id="L552">        eatYes.addListener(new ClickListener(){</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Advance the game time by 30 minutes to simulate the time taken to eat
+<span class="nc" id="L556">                int cost = 3;</span>
+<span class="nc bnc" id="L557" title="All 2 branches missed.">                if(cost &lt;= energyMeter.getEnergy()){</span>
+                    // If the player has enough energy, deduct the cost and update stats and day cycle
+<span class="nc" id="L559">                    energyMeter.loseEnergy(cost);</span>
+<span class="nc" id="L560">                    dayCycleManager.addTime(0, 30);</span>
+                    // Update the player's stats to reflect a meal eaten
+<span class="nc" id="L562">                    stats.mealAte(dayCycleManager.day);</span>
+<span class="nc" id="L563">                    stats.setEatStreak(dayCycleManager.day);</span>
+<span class="nc" id="L564">                    eatTable.remove(); // Remove the eating menu table from the stage</span>
+                }
+                else{
+                    // If not enough energy, show the insufficient energy table
+<span class="nc" id="L568">                    stage.addActor(insufficientTable);</span>
+<span class="nc" id="L569">                    eatTable.remove(); // Remove the eating menu table from the stage</span>
+                }
+<span class="nc" id="L571">            }</span>
+        });
+
+        // Listener for the &quot;No&quot; button to cancel the eating action
+<span class="nc" id="L575">        eatNo.addListener(new ClickListener(){</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Simply remove the eating menu table from the stage without taking any action
+<span class="nc" id="L579">                eatTable.remove();</span>
+<span class="nc" id="L580">            }</span>
+        });
+<span class="nc" id="L582">    }</span>
+
+    /**
+     * creates the popup for when there isn't enough energy for an activity
+     */
+    private void createInsufficient(){
+        // Initialize the table for the insufficient energy message
+<span class="nc" id="L589">        insufficientTable = new Table();</span>
+        // Create and style the title label for the insufficient energy popup
+<span class="nc" id="L591">        Label insufficientTitle = new Label(&quot;Not enough energy&quot;, menuTextStyle);</span>
+        // Create the OK button to close the popup
+<span class="nc" id="L593">        TextButton insufficientOk = new TextButton(&quot;OK&quot;, skin);</span>
+
+        // Add the title and OK button to the table
+<span class="nc" id="L596">        insufficientTable.add(insufficientTitle);</span>
+<span class="nc" id="L597">        insufficientTable.row();</span>
+<span class="nc" id="L598">        insufficientTable.add(insufficientOk);</span>
+        // Set the table to fill the parent container and center its content
+<span class="nc" id="L600">        insufficientTable.setFillParent(true);</span>
+<span class="nc" id="L601">        insufficientTable.center();</span>
+
+        // Add a listener to the OK button to remove the popup when clicked
+<span class="nc" id="L604">        insufficientOk.addListener(new ClickListener(){</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+<span class="nc" id="L607">                insufficientTable.remove(); // Remove the popup table from the stage</span>
+<span class="nc" id="L608">            }</span>
+        });
+<span class="nc" id="L610">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

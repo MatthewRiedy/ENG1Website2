@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EndScreen.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tests</a> &gt; <a href="index.source.html" class="el_package">com.mygdx</a> &gt; <span class="el_source">EndScreen.java</span></div><h1>EndScreen.java</h1><pre class="source lang-java linenums">package com.mygdx;
+
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.graphics.Texture;
+
+/**
+ * Represents the end screen displayed to the player upon completing the game
+ */
+public class EndScreen extends ScreenAdapter {
+    private Game game; // Reference to the main game object for screen switching
+
+    private Leaderboard leaderboard;
+    public Skin skin; // Skin for styling UI
+    public Stage stage; // Stage to host UI elements
+    private LabelStyle menuTextStyle; // Style for text displayed on the menu
+    private BitmapFont font; // Font for rendering text
+
+    private int highestEatStreak, highestStudyStreak, highestRelaxStreak;
+
+    private String grade;
+
+    private StatsTracker stats;
+
+    private TextField nameField;
+
+    /**
+     * Constructor initializing the end screen with the game and skin
+     * @param game Reference to the main game object
+     * @param skin skin for styling
+     */
+<span class="fc" id="L44">    public EndScreen(Game game, Skin skin, Leaderboard leaderboard, StatsTracker stats){</span>
+<span class="fc" id="L45">        this.game = game;</span>
+<span class="fc" id="L46">        this.skin = skin;</span>
+<span class="nc" id="L47">        font = new BitmapFont(); // Initialize the font</span>
+<span class="nc" id="L48">        this.leaderboard = leaderboard;</span>
+<span class="nc" id="L49">        this.stats = stats;</span>
+<span class="nc" id="L50">        this.highestEatStreak = stats.highestEatStreak;</span>
+<span class="nc" id="L51">        this.highestStudyStreak = stats.highestStudyStreak;</span>
+<span class="nc" id="L52">        this.highestRelaxStreak = stats.highestRelaxStreak;</span>
+<span class="nc" id="L53">    }</span>
+
+    @Override
+    public void show(){
+        // Create a new stage with a viewport matching the screen dimensions
+<span class="nc" id="L58">        stage = new Stage(new StretchViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));</span>
+        // Set the stage to process user input
+<span class="nc" id="L60">        Gdx.input.setInputProcessor(stage);</span>
+
+
+
+
+        // Define the style for labels used in this screen
+<span class="nc" id="L66">        menuTextStyle = new LabelStyle(font, Color.WHITE);</span>
+        // Setup table for layout
+<span class="nc" id="L68">        Table table = new Table();</span>
+<span class="nc" id="L69">        table.setFillParent(true);  // Table fills the entire stage</span>
+<span class="nc" id="L70">        table.center(); // Align items to the center</span>
+
+        // Create UI Components
+<span class="nc" id="L73">        Label message = new Label(&quot;Game Complete&quot;, menuTextStyle); // Game completion message</span>
+<span class="nc" id="L74">        Label grade = new Label(stats.getGrade(), menuTextStyle);</span>
+<span class="nc" id="L75">        TextButton menuButton = new TextButton(&quot;Main menu&quot;, skin); // Button to return to main menu</span>
+<span class="nc" id="L76">        TextButton exitButton = new TextButton(&quot;Exit game&quot;, skin); // Button to exit the game</span>
+<span class="nc" id="L77">        TextButton achievementsButton = new TextButton(&quot;Show Achievements&quot;, skin);</span>
+<span class="nc" id="L78">        nameField = new TextField(&quot;&quot;, skin);</span>
+
+<span class="nc" id="L80">        table.add(message).center().padBottom(20).row();</span>
+<span class="nc" id="L81">        table.add(grade).center().padBottom(20).row();</span>
+<span class="nc" id="L82">        table.add(new Label(&quot;Enter your name:&quot;, skin)).center().padBottom(5).row();</span>
+<span class="nc" id="L83">        table.add(nameField).width(200).padBottom(10).row();</span>
+<span class="nc" id="L84">        table.add(menuButton).expandX().fillX().padBottom(10);</span>
+<span class="nc" id="L85">        table.add(exitButton).expandX().fillX();</span>
+<span class="nc" id="L86">        table.add(achievementsButton).expandX().fillX().padTop(20).row();</span>
+
+<span class="nc" id="L88">        stage.addActor(table);</span>
+        // Add UI components to the table
+<span class="nc" id="L90">        table.row();</span>
+<span class="nc" id="L91">        table.add(message).center();</span>
+<span class="nc" id="L92">        table.row();</span>
+<span class="nc" id="L93">        table.add(grade);</span>
+<span class="nc" id="L94">        table.row();</span>
+<span class="nc" id="L95">        table.add(menuButton).padTop(20);</span>
+<span class="nc" id="L96">        table.row();</span>
+<span class="nc" id="L97">        table.add(exitButton).padTop(10);</span>
+<span class="nc" id="L98">        table.row();</span>
+<span class="nc" id="L99">        table.add(achievementsButton).padTop(10);</span>
+
+        // Set size for the message and buttons
+<span class="nc" id="L102">        float buttonWidth = Gdx.graphics.getWidth() * 0.4f;</span>
+<span class="nc" id="L103">        float buttonHeight = Gdx.graphics.getHeight() * 0.1f;</span>
+<span class="nc" id="L104">        message.setSize(buttonWidth, buttonHeight);</span>
+<span class="nc" id="L105">        menuButton.setSize(buttonWidth, buttonHeight);</span>
+<span class="nc" id="L106">        exitButton.setSize(buttonWidth, buttonHeight);</span>
+
+        // Add listeners for button actions
+<span class="nc" id="L109">        menuButton.addListener(new ClickListener() {</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+<span class="nc" id="L112">                String playerName = nameField.getText();</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">                if (!playerName.isEmpty()) {</span>
+<span class="nc" id="L114">                    int totalScore = stats.getScoreTotal(); // Get total score from StatTracker</span>
+<span class="nc" id="L115">                    Leaderboard.addToLeaderboard(playerName, totalScore); // Save score to leaderboard</span>
+                }
+<span class="nc" id="L117">                game.setScreen(new MenuScreen(game, skin)); // Switch to the main menu screen</span>
+<span class="nc" id="L118">            }</span>
+        });
+        
+<span class="nc" id="L121">        exitButton.addListener(new ClickListener() {</span>
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+<span class="nc" id="L124">                String playerName = nameField.getText();</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">                if (!playerName.isEmpty()){</span>
+<span class="nc" id="L126">                    int totalScore = stats.getScoreTotal();</span>
+<span class="nc" id="L127">                    Leaderboard.addToLeaderboard(playerName, totalScore);</span>
+                }
+<span class="nc" id="L129">                Gdx.app.exit(); // Exit the application</span>
+<span class="nc" id="L130">            }</span>
+        });
+
+<span class="nc" id="L133">        achievementsButton.addListener(new ClickListener(){</span>
+           public void clicked(InputEvent event, float x, float y){
+<span class="nc" id="L135">               showAchievementsDialog();</span>
+<span class="nc" id="L136">           }</span>
+        });
+
+        // Add the layout table to the stage
+<span class="nc" id="L140">        stage.addActor(table);</span>
+<span class="nc" id="L141">    }</span>
+    /**
+     * calculating which achievements were achieved
+     */
+    private void showAchievementsDialog(){
+<span class="nc" id="L146">        Dialog achievementsDialog = new Dialog(&quot;Achievements&quot;, skin);</span>
+
+<span class="nc" id="L148">        Table dialogTable = new Table();</span>
+<span class="nc" id="L149">        dialogTable.pad(10);</span>
+
+<span class="nc bnc" id="L151" title="All 2 branches missed.">        if (highestRelaxStreak == 7){</span>
+<span class="nc" id="L152">            Texture relaxTexture = new Texture(Gdx.files.internal(&quot;assets/Achievements/Basketball.png&quot;));</span>
+<span class="nc" id="L153">            Image relaxAchievement = new Image(relaxTexture);</span>
+<span class="nc" id="L154">            dialogTable.add(relaxAchievement).pad(10).row();</span>
+        }
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (stats.highestEatStreak &gt;= 7) {</span>
+<span class="nc" id="L157">            Texture eatTexture = new Texture(Gdx.files.internal(&quot;assets/Achievements/Eat.png&quot;));</span>
+<span class="nc" id="L158">            Image eatAchievement = new Image(eatTexture);</span>
+<span class="nc" id="L159">            dialogTable.add(eatAchievement).pad(10).row();</span>
+        }
+<span class="nc bnc" id="L161" title="All 2 branches missed.">        if (stats.highestStudyStreak &gt;= 7) {</span>
+<span class="nc" id="L162">            Texture studyTexture = new Texture(Gdx.files.internal(&quot;assets/Achievements/Study.png&quot;));</span>
+<span class="nc" id="L163">            Image studyAchievement = new Image(studyTexture);</span>
+<span class="nc" id="L164">            dialogTable.add(studyAchievement).pad(10).row();</span>
+        }
+<span class="nc bnc" id="L166" title="All 6 branches missed.">        if (stats.highestStudyStreak &gt;= 7 &amp;&amp; stats.highestEatStreak &gt;= 7 &amp;&amp; stats.highestRelaxStreak &gt;= 7) {</span>
+<span class="nc" id="L167">            Texture balancedTexture = new Texture(Gdx.files.internal(&quot;assets/Achievements/perfectlyBalanced.png&quot;));</span>
+<span class="nc" id="L168">            Image balancedAchievement = new Image(balancedTexture);</span>
+<span class="nc" id="L169">            dialogTable.add(balancedAchievement).pad(10).row();</span>
+        }
+
+<span class="nc" id="L172">        achievementsDialog.add(dialogTable);</span>
+<span class="nc" id="L173">        achievementsDialog.button(&quot;Close&quot;, true);</span>
+<span class="nc" id="L174">        achievementsDialog.show(stage);</span>
+<span class="nc" id="L175">    }</span>
+
+    @Override
+    public void render(float delta){
+        // Clear the screen
+<span class="nc" id="L180">        Gdx.gl.glClearColor(0.5f, 0.5f, 0.5f, 1);</span>
+<span class="nc" id="L181">        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);</span>
+        // Update and draw the stage
+<span class="nc" id="L183">        stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));</span>
+<span class="nc" id="L184">        stage.draw();</span>
+<span class="nc" id="L185">    }</span>
+
+    /**
+     * Dispose of the resources, to prevent memory leaks
+     */
+    @Override
+    public void dispose(){
+<span class="nc" id="L192">        stage.dispose();</span>
+<span class="nc" id="L193">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

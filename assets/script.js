@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
       box13: 'assets/files/Impl2.pdf',
       box14: 'https://github.com/BenSlater28/ENG1-part-2',
       box15: 'assets/files/desktop-2.0.jar',
-      box16: 'assets/files/Add2.pdf',
+      box16: 'assets/files/ManualTesting.pdf',
       box17: 'assets/files/User_Evaluation.pdf',
       box18: 'assets/files/Change2.pdf',
       box19: 'assets/files/Testing.pdf',
